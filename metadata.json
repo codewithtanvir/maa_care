@@ -1,0 +1,8 @@
+{
+  "name": "Maa Care - Pregnancy Companion",
+  "description": "A comprehensive AI-powered support app for expectant mothers, providing health tracking, emotional support, and baby development insights using Gemini.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
