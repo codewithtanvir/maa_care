@@ -28,6 +28,7 @@ const Appointments: React.FC<Props> = ({ user, onBack }) => {
   const fetchAppointments = async () => {
     if (!user.id) return;
     setIsLoading(true);
+    setAppointments([]); // Clear previous appointments to prevent flicker between accounts
     try {
       const { data, error } = await supabase
         .from('appointments')

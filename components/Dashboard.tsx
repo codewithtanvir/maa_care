@@ -31,6 +31,7 @@ const Dashboard: React.FC<Props> = ({ user, onNavigate }) => {
   const fetchInsight = async () => {
     if (!user?.currentWeek || !user?.id) return;
     setLoadingInsight(true);
+    setInsight(null); // Clear previous insight
     try {
       const { data: logs, error } = await supabase
         .from('health_logs')
@@ -54,6 +55,7 @@ const Dashboard: React.FC<Props> = ({ user, onNavigate }) => {
   const fetchAppointments = async () => {
     if (!user?.id) return;
     setLoadingApps(true);
+    setAppointments([]); // Clear previous appointments
     try {
       const { data, error } = await supabase
         .from('appointments')

@@ -65,6 +65,7 @@ const HealthTracker: React.FC<Props> = ({ user, onNavigate, onBack }) => {
   const fetchLogs = async () => {
     if (!user.id) return;
     setIsLoading(true);
+    setLogs([]); // Clear previous logs to prevent flicker between accounts
     try {
       const { data, error } = await supabase
         .from('health_logs')

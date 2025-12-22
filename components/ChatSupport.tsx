@@ -29,6 +29,7 @@ const ChatSupport: React.FC<Props> = ({ user, onBack }) => {
   const fetchChatHistory = async () => {
     if (!user.id) return;
     setIsFetching(true);
+    setMessages([]); // Clear previous messages to prevent flicker between accounts
     try {
       const { data, error } = await supabase
         .from('chat_messages')
