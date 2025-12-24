@@ -53,10 +53,10 @@ const VoiceSupport: React.FC<Props> = ({ user, onBack }) => {
         : `You are a calm, supportive maternity nurse named Kore. ${userContext} Your voice is soothing. You help expectant mothers with stress, late-night questions, or just provide a listening ear. Keep responses short and conversational. Speak in English.`;
 
       if (!(ai as any).live) {
-        throw new Error("Live API not supported by this SDK version. Please check @google/genai version.");
+        throw new Error("Live API not supported by this SDK version.");
       }
 
-      const sessionPromise = (ai as any).live.connect({
+      const session = await (ai as any).live.connect({
         model: 'models/gemini-2.0-flash-exp',
         config: {
           systemInstruction: {
@@ -69,37 +69,45 @@ const VoiceSupport: React.FC<Props> = ({ user, onBack }) => {
         },
         callbacks: {
           onopen: () => {
+            console.log("Live API: Connected");
             setStatus(t.listening);
             setIsActive(true);
+            
             const source = inputAudioContextRef.current!.createMediaStreamSource(streamRef.current!);
             const scriptProcessor = inputAudioContextRef.current!.createScriptProcessor(4096, 1, 1);
             
             scriptProcessor.onaudioprocess = (e) => {
+              if (!sessionRef.current) return;
+              
               const inputData = e.inputBuffer.getChannelData(0);
               const l = inputData.length;
               const int16 = new Int16Array(l);
               for (let i = 0; i < l; i++) {
                 int16[i] = Math.max(-1, Math.min(1, inputData[i])) * 32767;
               }
+              
               const pcmBlob = {
                 data: encode(new Uint8Array(int16.buffer)),
                 mimeType: 'audio/pcm;rate=16000',
               };
-              // Wait for session to be ready before sending data to prevent race conditions
-              sessionPromise.then((s: any) => {
-                if (s && typeof s.sendRealtimeInput === 'function') {
-                  s.sendRealtimeInput({ mediaChunks: [pcmBlob] });
-                }
-              });
+              
+              try {
+                sessionRef.current.sendRealtimeInput({ mediaChunks: [pcmBlob] });
+              } catch (sendErr) {
+                console.error("Error sending audio chunk:", sendErr);
+              }
             };
             
             source.connect(scriptProcessor);
             scriptProcessor.connect(inputAudioContextRef.current!.destination);
           },
           onmessage: async (message: any) => {
+            console.log("Live API Message:", message);
             try {
               // Process model turn audio output
-              const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+              const parts = message.serverContent?.modelTurn?.parts;
+              const base64Audio = parts?.find((p: any) => p.inlineData)?.inlineData?.data;
+              
               if (base64Audio && audioContextRef.current) {
                 nextStartTimeRef.current = Math.max(nextStartTimeRef.current, audioContextRef.current.currentTime);
                 const buffer = await decodeAudioData(decode(base64Audio), audioContextRef.current, 24000, 1);
@@ -116,8 +124,9 @@ const VoiceSupport: React.FC<Props> = ({ user, onBack }) => {
 
               // Handle interruptions (e.g., user speaking over the model)
               if (message.serverContent?.interrupted) {
+                console.log("Live API: Interrupted");
                 for (const source of sourcesRef.current.values()) {
-                  source.stop();
+                  try { source.stop(); } catch (e) {}
                 }
                 sourcesRef.current.clear();
                 nextStartTimeRef.current = 0;
@@ -126,17 +135,21 @@ const VoiceSupport: React.FC<Props> = ({ user, onBack }) => {
               console.error("Error processing voice message:", err);
             }
           },
-          onerror: (e) => console.error(e),
+          onerror: (e) => {
+            console.error("Live API Error Callback:", e);
+            setStatus(language === 'bn' ? 'ত্রুটি ঘটেছে' : 'Error occurred');
+          },
           onclose: () => {
+            console.log("Live API: Closed");
             setIsActive(false);
             setStatus(language === 'bn' ? 'কল শেষ হয়েছে' : 'Call ended');
           }
         }
       });
 
-      sessionRef.current = await sessionPromise;
+      sessionRef.current = session;
     } catch (err) {
-      console.error(err);
+      console.error("Failed to start session:", err);
       setStatus(language === 'bn' ? 'সংযোগ করতে ব্যর্থ হয়েছে' : 'Failed to connect');
     }
   };
@@ -173,7 +186,7 @@ const VoiceSupport: React.FC<Props> = ({ user, onBack }) => {
 
       <div className="space-y-2">
         <h2 className="text-2xl font-bold text-gray-800">{isActive ? t.speakingWith : t.voiceCompanion}</h2>
-        <p className={`${isActive ? 'text-pink-600' : 'text-gray-400'} font-medium`}>{status}</p>
+        <p className={`${isActive ? 'text-pink-600' : 'text-gray-500'} font-bold uppercase tracking-widest text-xs`}>{status}</p>
       </div>
 
       <div className="max-w-xs text-sm text-gray-500 leading-relaxed font-medium">

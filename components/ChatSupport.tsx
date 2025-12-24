@@ -171,7 +171,7 @@ const ChatSupport: React.FC<Props> = ({ user, onBack }) => {
           <button onClick={onBack} className="p-2 hover:bg-pink-50 rounded-full transition-colors">
             <ArrowLeft size={18} className="text-gray-600" />
           </button>
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Maa Care AI Support</span>
+          <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Maa Care AI Support</span>
         </div>
         <button 
           onClick={clearChat}
@@ -198,7 +198,7 @@ const ChatSupport: React.FC<Props> = ({ user, onBack }) => {
                   </div>
                 )}
                 <p className="leading-relaxed whitespace-pre-wrap">{m.content}</p>
-                <div className={`text-[9px] opacity-50 mt-1 ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
+                <div className={`text-[10px] opacity-70 mt-1 font-bold ${m.role === 'user' ? 'text-right' : 'text-left'}`}>
                   {new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>

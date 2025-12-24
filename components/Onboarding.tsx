@@ -32,6 +32,9 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
   const [pin, setPin] = useState('');
   const [age, setAge] = useState('');
   const [weight, setWeight] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('');
+  const [emergencyContactName, setEmergencyContactName] = useState('');
+  const [emergencyContactPhone, setEmergencyContactPhone] = useState('');
   const [pregnancyNumber, setPregnancyNumber] = useState('1');
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -85,7 +88,11 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
           onboarded: data.onboarded,
           age: data.age,
           weight: data.weight,
-          pregnancyNumber: data.pregnancy_number
+          bloodGroup: data.blood_group,
+          emergencyContactName: data.emergency_contact_name,
+          emergencyContactPhone: data.emergency_contact_phone,
+          pregnancyNumber: data.pregnancy_number,
+          avatarSeed: data.avatar_seed
         };
         onFinish(userProfile);
       } else {
@@ -137,7 +144,11 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
       onboarded: true,
       age: age ? parseInt(age) : null,
       weight: weight ? parseFloat(weight) : null,
-      pregnancy_number: parseInt(pregnancyNumber)
+      blood_group: bloodGroup,
+      emergency_contact_name: emergencyContactName,
+      emergency_contact_phone: emergencyContactPhone,
+      pregnancy_number: parseInt(pregnancyNumber),
+      avatar_seed: name || 'Mama'
     };
 
     try {
@@ -162,7 +173,11 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
         onboarded: savedProfile.onboarded,
         age: savedProfile.age,
         weight: savedProfile.weight,
-        pregnancyNumber: savedProfile.pregnancy_number
+        bloodGroup: savedProfile.blood_group,
+        emergencyContactName: savedProfile.emergency_contact_name,
+        emergencyContactPhone: savedProfile.emergency_contact_phone,
+        pregnancyNumber: savedProfile.pregnancy_number,
+        avatarSeed: savedProfile.avatar_seed
       });
     } catch (e) {
       console.error("Signup error", e);
@@ -226,7 +241,7 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
           </div>
         </div>
         <div className="grid grid-cols-7 gap-1 mb-2">
-          {dayLabels.map(l => <div key={l} className="text-[10px] font-black text-gray-300 uppercase text-center">{l}</div>)}
+          {dayLabels.map(l => <div key={l} className="text-xs font-black text-gray-400 uppercase text-center">{l}</div>)}
         </div>
         <div className="grid grid-cols-7 gap-1">
           {days}
@@ -253,7 +268,7 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
       ),
       content: (
         <div className="flex flex-col gap-4 mt-8 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center mb-2">ভাষা চয়ন করুন / Choose your language</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-widest text-center mb-2">ভাষা চয়ন করুন / Choose your language</p>
           <div className="flex gap-4">
             <button 
               onClick={() => setLanguage('bn')}
@@ -288,7 +303,7 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
       content: (
         <div className="space-y-4 mt-8 w-full text-left animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="relative">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2 px-1">
               {language === 'bn' ? "আপনার নাম" : "Your Name"}
             </label>
             <input 
@@ -300,7 +315,7 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
             />
           </div>
           <div className="relative">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2 px-1">
               {language === 'bn' ? "ফোন নম্বর" : "Phone Number"}
             </label>
             <input 
@@ -312,7 +327,7 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
             />
           </div>
           <div className="relative">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2 px-1">
               {language === 'bn' ? "৪ সংখ্যার পিন" : "4-Digit PIN"}
             </label>
             <input 
@@ -335,7 +350,7 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
         <div className="space-y-4 mt-8 w-full text-left animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="grid grid-cols-2 gap-4">
             <div className="relative">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2 px-1">
                 {language === 'bn' ? "বয়স" : "Age"}
               </label>
               <input 
@@ -347,7 +362,7 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
               />
             </div>
             <div className="relative">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2 px-1">
                 {language === 'bn' ? "ওজন (কেজি)" : "Weight (kg)"}
               </label>
               <input 
@@ -360,7 +375,7 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
             </div>
           </div>
           <div className="relative">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2 px-1">
               {language === 'bn' ? "এটি আপনার কততম সন্তান?" : "Which pregnancy is this?"}
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -368,12 +383,49 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
                 <button
                   key={num}
                   onClick={() => setPregnancyNumber(num.toString())}
-                  className={`py-4 rounded-2xl font-bold transition-all border-2 ${pregnancyNumber === num.toString() ? 'bg-pink-500 text-white border-pink-500 shadow-lg' : 'bg-gray-50 text-gray-400 border-gray-100 hover:border-pink-200'}`}
+                  className={`py-4 rounded-2xl font-bold transition-all border-2 ${pregnancyNumber === num.toString() ? 'bg-pink-500 text-white border-pink-500 shadow-lg' : 'bg-gray-50 text-gray-500 border-gray-100 hover:border-pink-200'}`}
                 >
                   {num}{num === 1 ? (language === 'bn' ? 'ম' : 'st') : num === 2 ? (language === 'bn' ? 'য়' : 'nd') : (language === 'bn' ? 'য়' : 'rd')}
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="relative">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2 px-1">
+              {language === 'bn' ? "রক্তের গ্রুপ" : "Blood Group"}
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map((bg) => (
+                <button
+                  key={bg}
+                  onClick={() => setBloodGroup(bg)}
+                  className={`py-2 rounded-xl font-bold text-xs transition-all border-2 ${bloodGroup === bg ? 'bg-pink-500 text-white border-pink-500 shadow-md' : 'bg-gray-50 text-gray-500 border-gray-100 hover:border-pink-200'}`}
+                >
+                  {bg}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3 pt-2 border-t border-pink-50">
+            <label className="text-xs font-bold text-pink-500 uppercase tracking-widest block px-1">
+              {language === 'bn' ? "জরুরি যোগাযোগ" : "Emergency Contact"}
+            </label>
+            <input 
+              type="text" 
+              value={emergencyContactName}
+              onChange={(e) => setEmergencyContactName(e.target.value)}
+              placeholder={language === 'bn' ? "নাম (যেমন: স্বামী/মা)" : "Name (e.g. Husband/Mother)"}
+              className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 px-6 shadow-sm focus:ring-2 focus:ring-pink-400 focus:bg-white outline-none text-gray-800 font-semibold placeholder:text-gray-300 transition-all text-sm"
+            />
+            <input 
+              type="tel" 
+              value={emergencyContactPhone}
+              onChange={(e) => setEmergencyContactPhone(e.target.value)}
+              placeholder={language === 'bn' ? "ফোন নম্বর" : "Phone Number"}
+              className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 px-6 shadow-sm focus:ring-2 focus:ring-pink-400 focus:bg-white outline-none text-gray-800 font-semibold placeholder:text-gray-300 transition-all text-sm"
+            />
           </div>
         </div>
       )
@@ -405,7 +457,7 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
 
           <div className="space-y-4 text-left">
             <div>
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2 px-1">
                 {language === 'bn' ? "ফোন নম্বর" : "Phone Number"}
               </label>
               <input 
@@ -417,7 +469,7 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
               />
             </div>
             <div>
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2 px-1">
                 {language === 'bn' ? "পিন" : "PIN"}
               </label>
               <input 
@@ -442,7 +494,7 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
             </button>
             <button 
               onClick={() => setIsLoginMode(false)}
-              className="w-full text-sm font-bold text-gray-400 hover:text-pink-500 transition-colors"
+              className="w-full text-sm font-bold text-gray-500 hover:text-pink-500 transition-colors"
             >
               {language === 'bn' ? 'নতুন অ্যাকাউন্ট তৈরি করুন' : 'Create new account'}
             </button>
@@ -560,7 +612,7 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
         {step <= 1 && (
           <button 
             onClick={() => setIsLoginMode(true)}
-            className="text-sm font-bold text-gray-400 hover:text-pink-500 transition-colors text-center"
+            className="text-sm font-bold text-gray-500 hover:text-pink-500 transition-colors text-center"
           >
             {language === 'bn' ? 'ইতিমধ্যে অ্যাকাউন্ট আছে? লগইন করুন' : 'Already have an account? Login'}
           </button>

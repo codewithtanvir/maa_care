@@ -71,6 +71,16 @@ export const translations = {
     installApp: "Install Maa Care",
     installDesc: "Add to home screen for quick access",
     installBtn: "Install",
+    trimester1: "1st Trimester",
+    trimester2: "2nd Trimester",
+    trimester3: "3rd Trimester",
+    tips: [
+      "Drink at least 8-10 glasses of water daily.",
+      "Take a short walk to improve circulation.",
+      "Try sleeping on your left side for better blood flow.",
+      "Eat small, frequent meals to manage heartburn.",
+      "Practice deep breathing for relaxation."
+    ],
     fruitReference: [
       "Poppy Seed", "Sesame Seed", "Lentil", "Blueberry", "Litchi", "Olive", "Strawberry", "Lime", "Prune", "Brussels Sprout",
       "Apricot", "Lemon", "Apple", "Avocado", "Sweet Potato", "Mango", "Banana", "Grapefruit", "Cantaloupe", "Guava",
@@ -149,6 +159,16 @@ export const translations = {
     installApp: "অ্যাপটি ইনস্টল করুন",
     installDesc: "সহজে ব্যবহারের জন্য হোম স্ক্রিনে যোগ করুন",
     installBtn: "ইনস্টল",
+    trimester1: "১ম ট্রাইমেস্টার",
+    trimester2: "২য় ট্রাইমেস্টার",
+    trimester3: "৩য় ট্রাইমেস্টার",
+    tips: [
+      "প্রতিদিন অন্তত ৮-১০ গ্লাস পানি পান করুন।",
+      "রক্ত সঞ্চালন বাড়াতে অল্প হাঁটাহাঁটি করুন।",
+      "রক্ত প্রবাহের উন্নতির জন্য বাম কাতে ঘুমানোর চেষ্টা করুন।",
+      "বুক জ্বালাপোড়া কমাতে অল্প অল্প করে বারবার খাবার খান।",
+      "মানসিক প্রশান্তির জন্য দীর্ঘশ্বাস নেওয়ার ব্যায়াম করুন।"
+    ],
     fruitReference: [
       "পোস্ত দানা", "তিল দানা", "মসুর ডাল", "ব্লুবেরি", "লিচু", "জলপাই", "স্ট্রবেরি", "লেবু", "আলুবোখরা", "করল্লা",
       "এপ্রিকট", "পাতি লেবু", "আপেল", "পেয়ারা", "মিষ্টি আলু", "আম", "কলা", "বাতাবি লেবু", "ফুটি", "বড় পেয়ারা",

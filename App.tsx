@@ -12,7 +12,7 @@ import FoodSafety from './components/FoodSafety';
 import Onboarding from './components/Onboarding';
 import SymptomChecker from './components/SymptomChecker';
 import Appointments from './components/Appointments';
-import { Home, MessageCircle, Mic, Activity, User as UserIcon, Calendar, Download, X } from 'lucide-react';
+import { Home, MessageCircle, Activity, User as UserIcon, Calendar, X } from 'lucide-react';
 import { translations } from './translations';
 
 const App: React.FC = () => {
@@ -171,12 +171,12 @@ const App: React.FC = () => {
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-gray-900">{t.installApp}</p>
-              <p className="text-[10px] text-gray-500 font-medium">{t.installDesc}</p>
+              <p className="text-xs text-gray-500 font-medium">{t.installDesc}</p>
             </div>
             <div className="flex items-center gap-2">
               <button 
                 onClick={handleInstallClick}
-                className="px-3 py-1.5 bg-pink-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-lg shadow-pink-100 active:scale-95 transition-all"
+                className="px-3 py-1.5 bg-pink-500 text-white text-xs font-black uppercase tracking-widest rounded-lg shadow-lg shadow-pink-100 active:scale-95 transition-all"
               >
                 {t.installBtn}
               </button>
@@ -209,8 +209,8 @@ const App: React.FC = () => {
                 }`}>
                   <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
                 </div>
-                <span className={`text-[10px] mt-1 transition-all duration-200 ${
-                  isActive ? 'font-bold' : 'font-medium'
+                <span className={`text-xs mt-1 transition-all duration-200 ${
+                  isActive ? 'font-black' : 'font-bold'
                 }`}>
                   {item.label}
                 </span>

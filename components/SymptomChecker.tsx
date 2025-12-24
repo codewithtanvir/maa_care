@@ -96,7 +96,8 @@ const SymptomChecker: React.FC<Props> = ({ user, onBack, onNavigate }) => {
   };
 
   const handleCallDoctor = () => {
-    window.location.href = "tel:999"; // Default emergency for example, should be localized or user-set
+    const phone = user.emergencyContactPhone || "999";
+    window.location.href = `tel:${phone}`;
   };
 
   const getStatusColor = (status: string) => {
@@ -112,32 +113,32 @@ const SymptomChecker: React.FC<Props> = ({ user, onBack, onNavigate }) => {
   };
 
   return (
-    <div className="p-6 space-y-6 pb-12 bg-slate-50/30">
+    <div className="p-6 space-y-8 pb-12 bg-white">
       <header className="flex items-center gap-4">
-        <button onClick={onBack} className="p-2 hover:bg-white rounded-full transition-all shadow-sm">
-          <ArrowLeft />
+        <button onClick={onBack} className="p-3 hover:bg-pink-50 rounded-2xl transition-all text-gray-600">
+          <ArrowLeft size={20} />
         </button>
-        <h1 className="text-2xl font-bold text-gray-800 tracking-tight">{t.symptomChecker}</h1>
+        <h1 className="text-2xl font-black text-gray-800 tracking-tight">{t.symptomChecker}</h1>
       </header>
 
       {!result && (
-        <div className="bg-white p-6 rounded-[2.5rem] border border-pink-50 shadow-sm space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="space-y-4">
+        <div className="bg-white p-6 rounded-[2rem] border border-pink-50 shadow-sm space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-5">
             <div className="flex items-center gap-3 text-pink-500">
-              <div className="p-2 bg-pink-50 rounded-xl">
-                <Activity size={20} />
+              <div className="p-2.5 bg-pink-50 rounded-2xl shadow-inner">
+                <Activity size={18} />
               </div>
-              <h3 className="font-bold text-sm uppercase tracking-widest">{language === 'bn' ? 'লক্ষণ নির্বাচন করুন' : 'Select Symptoms'}</h3>
+              <h3 className="font-black text-xs uppercase tracking-[0.2em] text-gray-500">{language === 'bn' ? 'লক্ষণ নির্বাচন করুন' : 'Select Symptoms'}</h3>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               {symptomList.map(s => (
                 <button
                   key={s}
                   onClick={() => toggleSymptom(s)}
-                  className={`px-4 py-2.5 rounded-2xl text-[11px] font-bold transition-all border uppercase tracking-tighter ${
+                  className={`px-4 py-2.5 rounded-2xl text-[10px] font-black transition-all border uppercase tracking-wider ${
                     selectedSymptoms.includes(s) 
-                      ? 'bg-pink-500 text-white border-pink-500 shadow-md scale-105' 
-                      : 'bg-gray-50 text-gray-400 border-gray-100 hover:border-pink-200 hover:bg-white'
+                      ? 'bg-pink-500 text-white border-pink-500 shadow-xl shadow-pink-100 scale-105' 
+                      : 'bg-gray-50 text-gray-500 border-gray-100 hover:border-pink-200 hover:bg-white'
                   }`}
                 >
                   {s}
@@ -146,24 +147,24 @@ const SymptomChecker: React.FC<Props> = ({ user, onBack, onNavigate }) => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">
+          <div className="space-y-2.5">
+            <label className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] ml-2">
               {language === 'bn' ? 'অতিরিক্ত তথ্য' : 'Additional Context'}
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={language === 'bn' ? 'বিস্তারিত লিখুন...' : 'Describe when it started...'}
-              className="w-full bg-slate-50 border border-gray-100 rounded-3xl p-5 text-sm font-medium focus:ring-2 focus:ring-pink-400 focus:bg-white focus:outline-none min-h-[120px] transition-all"
+              className="w-full bg-gray-50 border border-gray-100 rounded-[1.5rem] p-5 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-pink-400 focus:bg-white focus:outline-none min-h-[100px] transition-all placeholder:text-gray-300"
             />
           </div>
 
           <button
             onClick={handleAnalyze}
             disabled={loading || (selectedSymptoms.length === 0 && !notes)}
-            className="w-full py-5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-[2rem] font-bold shadow-xl shadow-pink-100 active:scale-95 transition-all flex items-center justify-center gap-3"
+            className="w-full py-5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-[1.5rem] font-black uppercase tracking-widest text-sm shadow-2xl shadow-pink-100 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
           >
-            {loading ? <RefreshCw className="animate-spin" /> : <Sparkles />}
+            {loading ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
             <span>{loading ? (language === 'bn' ? 'বিশ্লেষণ করা হচ্ছে...' : 'Analyzing...') : t.analyzeSymptoms}</span>
           </button>
         </div>
@@ -171,35 +172,38 @@ const SymptomChecker: React.FC<Props> = ({ user, onBack, onNavigate }) => {
 
       {result && (
         <div className="space-y-6 animate-in zoom-in-95 duration-500">
-          <div className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-2xl">
-            <div className={`p-8 text-white bg-gradient-to-br ${getStatusColor(result.status)} shadow-lg`}>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 bg-white/20 backdrop-blur-md rounded-2xl">
+          <div className="bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-2xl">
+            <div className={`p-5 text-white bg-gradient-to-br ${getStatusColor(result.status)} shadow-lg relative overflow-hidden`}>
+              <div className="absolute -top-4 -right-4 p-6 opacity-20">
+                {getStatusIcon(result.status)}
+              </div>
+              <div className="relative z-10 flex items-center gap-4">
+                <div className="p-2.5 bg-white/20 backdrop-blur-xl rounded-2xl border border-white/30 shadow-inner">
                   {getStatusIcon(result.status)}
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black tracking-tight leading-tight uppercase">
+                  <h3 className="text-lg font-black tracking-tight leading-tight uppercase">
                     {result.status.includes('URGENT') ? t.urgent : result.status.includes('MONITOR') ? t.monitor : t.normal}
                   </h3>
-                  <p className="text-white/80 text-sm font-bold tracking-wide mt-0.5">{result.title}</p>
+                  <p className="text-white/90 text-xs font-black tracking-wide mt-0.5 uppercase opacity-80">{result.title}</p>
                 </div>
               </div>
             </div>
 
-            <div className="p-8 space-y-8">
+            <div className="p-5 space-y-6">
               {result.sections.map((section, idx) => (
-                <div key={idx} className="animate-in fade-in slide-in-from-bottom-2">
-                  <h4 className="text-[10px] font-black text-pink-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-pink-500" />
+                <div key={idx} className="animate-in fade-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
+                  <h4 className="text-xs font-black text-pink-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                    <div className="w-1 h-1 rounded-full bg-pink-500 shadow-[0_0_8px_rgba(236,72,153,0.5)]" />
                     {section.heading}
                   </h4>
-                  <div className="text-gray-700 leading-relaxed font-medium text-sm whitespace-pre-wrap pl-3.5 border-l-2 border-slate-50">
+                  <div className="text-gray-700 leading-relaxed font-bold text-sm whitespace-pre-wrap pl-4 border-l-2 border-pink-50">
                     {section.body}
                   </div>
                 </div>
               ))}
 
-              <div className="pt-6 border-t border-slate-100 space-y-4">
+              <div className="pt-4 border-t border-slate-100 space-y-4">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">
                   {language === 'bn' ? 'পরবর্তী পদক্ষেপ' : 'Next Steps'}
                 </p>
@@ -207,20 +211,20 @@ const SymptomChecker: React.FC<Props> = ({ user, onBack, onNavigate }) => {
                   <button 
                     onClick={handleSaveToLog} 
                     disabled={saving}
-                    className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-pink-200 transition-all active:scale-95 group disabled:opacity-50"
+                    className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-[1.5rem] border border-gray-100 hover:border-pink-200 transition-all active:scale-95 group disabled:opacity-50"
                   >
                     <div className="p-2 bg-white rounded-xl shadow-sm group-hover:bg-pink-50 group-hover:text-pink-500 transition-colors">
-                      {saving ? <Loader2 size={20} className="animate-spin" /> : <ClipboardCheck size={20} />}
+                      {saving ? <Loader2 size={18} className="animate-spin" /> : <ClipboardCheck size={18} />}
                     </div>
-                    <span className="text-[10px] font-bold text-gray-600 uppercase tracking-tighter">
+                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
                       {language === 'bn' ? 'লগ এ সেভ করুন' : 'Save to Log'}
                     </span>
                   </button>
-                  <button onClick={handleCallDoctor} className="flex flex-col items-center gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-blue-200 transition-all active:scale-95 group">
+                  <button onClick={handleCallDoctor} className="flex flex-col items-center gap-2 p-4 bg-gray-50 rounded-[1.5rem] border border-gray-100 hover:border-blue-200 transition-all active:scale-95 group">
                     <div className="p-2 bg-white rounded-xl shadow-sm group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
-                      <PhoneCall size={20} />
+                      <PhoneCall size={18} />
                     </div>
-                    <span className="text-[10px] font-bold text-gray-600 uppercase tracking-tighter">
+                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
                       {language === 'bn' ? 'ডাক্তার কল করুন' : 'Call Doctor'}
                     </span>
                   </button>
@@ -231,9 +235,9 @@ const SymptomChecker: React.FC<Props> = ({ user, onBack, onNavigate }) => {
           
           <button 
             onClick={() => { setResult(null); setSelectedSymptoms([]); setNotes(''); }}
-            className="w-full py-4 bg-white border border-slate-200 text-gray-400 rounded-[2rem] font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2"
+            className="w-full py-4 bg-white border border-gray-100 text-gray-400 rounded-[2rem] font-black uppercase tracking-widest text-[10px] shadow-sm hover:text-gray-600 transition-all flex items-center justify-center gap-3"
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={14} />
             {language === 'bn' ? 'আবার শুরু করুন' : 'Start Over'}
           </button>
         </div>

@@ -27,6 +27,10 @@ export interface UserProfile {
   age?: number;
   weight?: number;
   pregnancyNumber?: number;
+  bloodGroup?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  avatarSeed?: string;
   appointments?: Appointment[];
   kick_history?: any[];
   hospital_bag?: any[];
@@ -47,6 +51,8 @@ export interface LogEntry {
   mood: 'happy' | 'tired' | 'anxious' | 'excited' | 'nauseous';
   symptoms: string[];
   notes: string;
+  bloodPressure?: string;
+  glucose?: number;
 }
 
 export interface Message {

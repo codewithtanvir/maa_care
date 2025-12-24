@@ -88,11 +88,13 @@ const Appointments: React.FC<Props> = ({ user, onBack }) => {
   };
 
   const handleDeleteAppointment = async (id: string) => {
+    if (!user.id) return;
     try {
       const { error } = await supabase
         .from('appointments')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (!error) {
         setAppointments(appointments.filter(a => a.id !== id));
@@ -103,80 +105,80 @@ const Appointments: React.FC<Props> = ({ user, onBack }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="flex flex-col h-full bg-white">
       {/* Header */}
-      <div className="bg-white px-4 py-4 flex items-center gap-3 border-b sticky top-0 z-10">
-        <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-          <ArrowLeft className="w-6 h-6 text-gray-600" />
+      <div className="px-6 py-6 flex items-center gap-4 sticky top-0 z-10 bg-white/80 backdrop-blur-md">
+        <button onClick={onBack} className="p-3 hover:bg-rose-50 rounded-2xl transition-all text-gray-600">
+          <ArrowLeft size={20} />
         </button>
-        <h1 className="text-xl font-bold text-gray-800">{t.appointments}</h1>
+        <h1 className="text-2xl font-black text-gray-800 tracking-tight">{t.appointments}</h1>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 pb-12 space-y-4">
+      <div className="flex-1 overflow-y-auto px-6 pb-12 space-y-6">
         {/* Add Button */}
         {!showAddApp && (
           <button 
             onClick={() => setShowAddApp(true)}
-            className="w-full py-4 px-6 bg-rose-500 text-white rounded-2xl font-semibold flex items-center justify-center gap-2 shadow-lg shadow-rose-200 active:scale-95 transition-all"
+            className="w-full py-4 px-8 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-[2rem] font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 shadow-xl shadow-rose-100 active:scale-95 transition-all"
           >
-            <Plus className="w-5 h-5" />
+            <Plus size={18} />
             {t.addAppointment}
           </button>
         )}
 
         {/* Add Form */}
         {showAddApp && (
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-rose-100 animate-in fade-in slide-in-from-top-4 duration-300">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-gray-800">{t.addAppointment}</h3>
-              <button onClick={() => setShowAddApp(false)} className="p-1 text-gray-400">
-                <X className="w-5 h-5" />
+          <div className="bg-white p-6 rounded-[2rem] shadow-2xl border border-rose-50 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-black text-gray-800 tracking-tight">{t.addAppointment}</h3>
+              <button onClick={() => setShowAddApp(false)} className="p-2 bg-gray-50 text-gray-400 rounded-xl">
+                <X size={18} />
               </button>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className="text-xs font-medium text-gray-500 mb-1 block">{t.appointmentTitle}</label>
+                <label className="text-xs font-black text-gray-500 uppercase tracking-widest mb-2 block">{t.appointmentTitle}</label>
                 <input 
                   type="text" 
                   value={newAppTitle}
                   onChange={(e) => setNewAppTitle(e.target.value)}
-                  className="w-full p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-rose-500"
+                  className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 font-bold text-gray-700"
                   placeholder="e.g. Ultrasound"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">{t.appointmentDate}</label>
+                  <label className="text-xs font-black text-gray-500 uppercase tracking-widest mb-2 block">{t.appointmentDate}</label>
                   <input 
                     type="date" 
                     value={newAppDate}
                     onChange={(e) => setNewAppDate(e.target.value)}
-                    className="w-full p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-rose-500"
+                    className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 font-bold text-gray-700"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">{t.appointmentTime}</label>
+                  <label className="text-xs font-black text-gray-500 uppercase tracking-widest mb-2 block">{t.appointmentTime}</label>
                   <input 
                     type="time" 
                     value={newAppTime}
                     onChange={(e) => setNewAppTime(e.target.value)}
-                    className="w-full p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-rose-500"
+                    className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 font-bold text-gray-700"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-500 mb-1 block">{t.location}</label>
+                <label className="text-xs font-black text-gray-500 uppercase tracking-widest mb-2 block">{t.location}</label>
                 <input 
                   type="text" 
                   value={newAppLoc}
                   onChange={(e) => setNewAppLoc(e.target.value)}
-                  className="w-full p-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-rose-500"
+                  className="w-full p-4 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-rose-500 font-bold text-gray-700"
                   placeholder="Hospital name"
                 />
               </div>
               <button 
                 onClick={handleAddAppointment}
-                className="w-full py-3 bg-rose-500 text-white rounded-xl font-bold mt-2"
+                className="w-full py-4 bg-rose-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-rose-100 active:scale-95 transition-all"
               >
                 {t.save}
               </button>
@@ -186,43 +188,51 @@ const Appointments: React.FC<Props> = ({ user, onBack }) => {
 
         {/* List */}
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 text-rose-500 animate-spin mb-2" />
-            <p className="text-gray-500 text-sm">Loading appointments...</p>
+          <div className="flex flex-col items-center justify-center py-16 text-gray-500 gap-3">
+            <div className="w-10 h-10 border-4 border-rose-100 border-t-rose-500 rounded-full animate-spin" />
+            <p className="text-xs font-black uppercase tracking-widest">Loading...</p>
           </div>
         ) : appointments.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-3xl border-2 border-dashed border-gray-100">
-            <Calendar className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-            <p className="text-gray-400">{t.noAppointments}</p>
+          <div className="text-center py-20 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-100">
+            <Calendar size={48} className="text-gray-200 mx-auto mb-4" />
+            <p className="text-xs font-black text-gray-500 uppercase tracking-widest">{t.noAppointments}</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {appointments.map((app) => (
-              <div key={app.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 group">
-                <div className="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-6 h-6 text-rose-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-gray-800 truncate">{app.title}</h4>
-                  <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Clock className="w-3 h-3" />
-                      {app.date} {app.time}
+              <div key={app.id} className="bg-white p-5 rounded-[2rem] border border-rose-50 shadow-sm hover:border-rose-200 hover:shadow-md transition-all duration-300 group">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-inner group-hover:scale-110 transition-transform">
+                      <Calendar size={18} />
                     </div>
-                    {app.location && (
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
-                        <MapPin className="w-3 h-3" />
-                        {app.location}
-                      </div>
-                    )}
+                    <div>
+                      <h4 className="font-black text-gray-800 text-base tracking-tight">{app.title}</h4>
+                      <p className="text-xs text-rose-500 uppercase font-black tracking-widest">{app.date}</p>
+                    </div>
                   </div>
+                  <button 
+                    onClick={() => handleDeleteAppointment(app.id)}
+                    className="opacity-0 group-hover:opacity-100 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                  >
+                    <Trash2 size={18} />
+                  </button>
                 </div>
-                <button 
-                  onClick={() => handleDeleteAppointment(app.id)}
-                  className="p-2 text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                
+                <div className="flex flex-wrap gap-6 pt-4 border-t border-gray-50">
+                  {app.time && (
+                    <div className="flex items-center gap-2">
+                      <Clock size={14} className="text-gray-400" />
+                      <span className="text-xs font-bold text-gray-600">{app.time}</span>
+                    </div>
+                  )}
+                  {app.location && (
+                    <div className="flex items-center gap-2">
+                      <MapPin size={14} className="text-gray-400" />
+                      <span className="text-xs font-bold text-gray-600">{app.location}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

@@ -30,6 +30,7 @@ const HospitalBag: React.FC<Props> = ({ onBack, user }) => {
   const fetchBag = async () => {
     if (!user.id) return;
     setIsLoading(true);
+    setItems([]); // Clear previous items to prevent flicker between accounts
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -97,42 +98,58 @@ const HospitalBag: React.FC<Props> = ({ onBack, user }) => {
   }
 
   return (
-    <div className="p-6 space-y-6 pb-12">
+    <div className="p-6 space-y-8 pb-12">
       <header className="flex items-center gap-4">
-        <button onClick={onBack} className="p-2 hover:bg-white rounded-full transition-all">
-          <ArrowLeft />
+        <button onClick={onBack} className="p-3 hover:bg-indigo-50 rounded-2xl transition-all text-gray-600">
+          <ArrowLeft size={20} />
         </button>
-        <h1 className="text-2xl font-bold text-gray-800">{t.hospitalBag}</h1>
+        <h1 className="text-2xl font-black text-gray-800 tracking-tight">{t.hospitalBag}</h1>
       </header>
 
-      <div className="bg-gradient-to-br from-indigo-500 to-blue-400 p-6 rounded-3xl text-white shadow-xl">
-        <div className="flex justify-between items-center mb-4">
-          <Briefcase size={32} />
-          <span className="text-3xl font-bold">{Math.round((completed / items.length) * 100)}%</span>
+      <div className="bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-700 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-100 relative overflow-hidden group">
+        <div className="absolute -top-4 -right-4 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+          <Briefcase size={120} />
         </div>
-        <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-white rounded-full transition-all duration-500"
-            style={{ width: `${(completed / items.length) * 100}%` }}
-          />
+        <div className="relative z-10">
+          <div className="flex justify-between items-end mb-6">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] opacity-80 mb-1">{language === 'bn' ? 'প্রস্তুতি' : 'Preparation'}</p>
+              <h2 className="text-4xl font-black tracking-tight">{Math.round((completed / items.length) * 100)}%</h2>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-black uppercase tracking-widest opacity-80">{completed} / {items.length}</p>
+              <p className="text-xs font-bold opacity-60">{t.packed}</p>
+            </div>
+          </div>
+          <div className="h-3 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm">
+            <div 
+              className="h-full bg-white rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+              style={{ width: `${(completed / items.length) * 100}%` }}
+            />
+          </div>
         </div>
-        <p className="mt-4 text-xs opacity-90 font-bold uppercase tracking-widest">{completed} of {items.length} {t.packed}</p>
       </div>
 
-      <div className="space-y-3 pb-24">
+      <div className="space-y-4 pb-24">
         {items.map((item: any) => (
           <button 
             key={item.id}
             onClick={() => toggle(item.id)}
-            className={`w-full flex items-center justify-between p-5 rounded-2xl transition-all border text-left ${
-              item.checked ? 'bg-white/40 border-gray-100 opacity-60' : 'bg-white border-pink-50 shadow-sm hover:border-pink-200'
+            className={`w-full flex items-center justify-between p-6 rounded-[2rem] transition-all duration-300 border text-left group ${
+              item.checked 
+                ? 'bg-gray-50/50 border-gray-100 opacity-60' 
+                : 'bg-white border-indigo-50 shadow-sm hover:border-indigo-200 hover:shadow-md'
             }`}
           >
-            <div className="flex items-center gap-4">
-              {item.checked ? <CheckCircle className="text-green-500 flex-shrink-0" /> : <Circle className="text-gray-200 flex-shrink-0" />}
+            <div className="flex items-center gap-5">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                item.checked ? 'bg-green-100 text-green-600' : 'bg-indigo-50 text-indigo-300 group-hover:text-indigo-500'
+              }`}>
+                {item.checked ? <CheckCircle size={24} /> : <Circle size={24} />}
+              </div>
               <div>
-                <p className={`font-bold text-sm ${item.checked ? 'line-through text-gray-400' : 'text-gray-800'}`}>{item.text}</p>
-                <span className="text-[9px] uppercase tracking-widest text-gray-400 font-bold">{item.category}</span>
+                <p className={`font-black text-base tracking-tight transition-all ${item.checked ? 'line-through text-gray-400' : 'text-gray-800'}`}>{item.text}</p>
+                <span className={`text-xs uppercase tracking-[0.15em] font-black ${item.checked ? 'text-gray-300' : 'text-indigo-500'}`}>{item.category}</span>
               </div>
             </div>
           </button>

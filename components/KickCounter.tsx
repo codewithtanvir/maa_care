@@ -34,6 +34,7 @@ const KickCounter: React.FC<Props> = ({ onBack, user }) => {
   const fetchHistory = async () => {
     if (!user.id) return;
     setIsLoading(true);
+    setHistory([]); // Clear previous history to prevent flicker between accounts
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -117,64 +118,105 @@ const KickCounter: React.FC<Props> = ({ onBack, user }) => {
   };
 
   return (
-    <div className="p-6 space-y-6 pb-12">
+    <div className="p-6 space-y-8 pb-12">
       <header className="flex items-center gap-4">
-        <button onClick={onBack} className="p-2 hover:bg-white rounded-full transition-all">
-          <ArrowLeft />
+        <button onClick={onBack} className="p-3 hover:bg-pink-50 rounded-2xl transition-all text-gray-600">
+          <ArrowLeft size={20} />
         </button>
-        <h1 className="text-2xl font-bold text-gray-800">{t.kickCounter}</h1>
+        <h1 className="text-2xl font-black text-gray-800 tracking-tight">{t.kickCounter}</h1>
       </header>
 
-      <div className="flex flex-col items-center py-8 space-y-8">
-        <div className="text-center">
-          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">{t.targetKicks}</p>
-          <div className="text-8xl font-black text-pink-500 tabular-nums drop-shadow-sm">{count}</div>
-          <div className="flex items-center justify-center gap-2 text-gray-500 mt-4 font-bold bg-pink-50 px-4 py-2 rounded-full text-sm">
-            <Timer size={16} /> {formatTime(elapsed)}
+      <div className="flex flex-col items-center py-4 space-y-10">
+        <div className="relative flex items-center justify-center">
+          {/* Circular Progress Background */}
+          <svg className="w-64 h-64 transform -rotate-90">
+            <circle
+              cx="128"
+              cy="128"
+              r="110"
+              stroke="currentColor"
+              strokeWidth="12"
+              fill="transparent"
+              className="text-pink-50"
+            />
+            <circle
+              cx="128"
+              cy="128"
+              r="110"
+              stroke="currentColor"
+              strokeWidth="12"
+              fill="transparent"
+              strokeDasharray={2 * Math.PI * 110}
+              strokeDashoffset={2 * Math.PI * 110 * (1 - count / 10)}
+              strokeLinecap="round"
+              className="text-pink-500 transition-all duration-500 ease-out"
+            />
+          </svg>
+          
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+            <p className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-1">{t.targetKicks}</p>
+            <div className="text-7xl font-black text-gray-800 tabular-nums leading-none">{count}</div>
+            <div className="flex items-center gap-1.5 text-pink-500 mt-4 font-black bg-pink-50 px-4 py-1.5 rounded-full text-xs uppercase tracking-widest">
+              <Timer size={16} /> {formatTime(elapsed)}
+            </div>
           </div>
         </div>
 
         <button 
           onClick={handleKick}
-          className="w-48 h-48 rounded-full bg-gradient-to-br from-pink-500 to-rose-400 flex flex-col items-center justify-center text-white shadow-2xl shadow-pink-200 active:scale-90 transition-all border-8 border-pink-50 ring-4 ring-pink-100"
+          className="group relative w-44 h-44 rounded-[3rem] bg-gradient-to-br from-pink-500 to-rose-500 flex flex-col items-center justify-center text-white shadow-2xl shadow-pink-200 active:scale-90 transition-all border-8 border-white ring-1 ring-pink-100 overflow-hidden"
         >
-          <Footprints size={48} className="mb-2" />
-          <span className="font-bold text-xl uppercase tracking-widest">{t.kick}</span>
+          <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Footprints size={48} className="mb-2 drop-shadow-lg group-hover:scale-110 transition-transform" />
+          <span className="font-black text-sm uppercase tracking-[0.2em] drop-shadow-md">{t.kick}</span>
         </button>
 
-        <div className="flex gap-4">
-          <button 
-            onClick={() => { setIsActive(false); setCount(0); setElapsed(0); setStartTime(null); }}
-            className="p-4 bg-gray-100 text-gray-500 rounded-full active:scale-95 transition-all shadow-sm"
-          >
-            <RotateCcw size={24} />
-          </button>
-        </div>
+        <button 
+          onClick={resetCounter}
+          className="flex items-center gap-2 px-6 py-3 bg-gray-50 text-gray-500 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-gray-100 hover:text-gray-600 transition-all"
+        >
+          <RotateCcw size={16} /> {language === 'bn' ? 'রিসেট' : 'Reset'}
+        </button>
       </div>
 
-      <section className="space-y-4 pb-24">
-        <h3 className="text-lg font-bold text-gray-700 flex items-center gap-2 uppercase tracking-tight">
-          <History size={18} /> {t.history}
-        </h3>
+      <section className="space-y-6 pb-24">
+        <div className="flex justify-between items-center px-2">
+          <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
+            <History size={16} /> {t.history}
+          </h3>
+          <span className="text-xs font-bold text-gray-400">{history.length} {language === 'bn' ? 'সেশন' : 'Sessions'}</span>
+        </div>
+
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="animate-spin text-pink-500" size={32} />
+          <div className="flex flex-col items-center justify-center py-12 text-gray-400 gap-3">
+            <div className="w-10 h-10 border-4 border-pink-100 border-t-pink-500 rounded-full animate-spin" />
+            <p className="text-xs font-black uppercase tracking-widest">{language === 'bn' ? 'লোড হচ্ছে...' : 'Loading...'}</p>
           </div>
         ) : history.length === 0 ? (
-          <p className="text-center text-gray-300 italic py-12 text-sm">{language === 'bn' ? 'আজ কোন সেশন রেকর্ড করা হয়নি।' : 'No sessions recorded today.'}</p>
+          <div className="text-center py-16 bg-gray-50 rounded-[2.5rem] border-2 border-dashed border-gray-100">
+            <Footprints size={48} className="mx-auto mb-4 text-gray-200" />
+            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">{language === 'bn' ? 'আজ কোন সেশন নেই' : 'No sessions today'}</p>
+          </div>
         ) : (
-          history.map(s => (
-            <div key={s.id} className="bg-white p-5 rounded-3xl border border-pink-50 flex justify-between items-center shadow-sm hover:border-pink-200 transition-all">
-              <div>
-                <p className="font-bold text-gray-800 text-lg">{s.count} {language === 'bn' ? 'লাথি' : 'kicks'}</p>
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{s.date}</p>
+          <div className="space-y-4">
+            {history.map(s => (
+              <div key={s.id} className="bg-white p-6 rounded-[2rem] border border-pink-50 flex justify-between items-center shadow-sm hover:border-pink-200 hover:shadow-md transition-all duration-300 group">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-pink-50 flex items-center justify-center text-pink-500 shadow-inner group-hover:scale-110 transition-transform">
+                    <Footprints size={20} />
+                  </div>
+                  <div>
+                    <p className="font-black text-gray-800 text-lg tracking-tight">{s.count} {language === 'bn' ? 'লাথি' : 'Kicks'}</p>
+                    <p className="text-xs text-gray-500 font-black uppercase tracking-widest">{s.date}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-black text-pink-500 tabular-nums">{formatTime(s.duration)}</p>
+                  <p className="text-xs text-gray-500 uppercase font-black tracking-widest">{t.duration}</p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-bold text-pink-500">{formatTime(s.duration)}</p>
-                <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">{t.duration}</p>
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </section>
     </div>

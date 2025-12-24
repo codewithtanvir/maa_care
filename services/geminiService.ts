@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Type, GenerateContentResponse, Modality } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import OpenAI from "openai";
 import { Language, UserProfile } from "../types";
 
@@ -22,7 +22,7 @@ const openai = new OpenAI({
  */
 export const getAIChatResponse = async (history: { role: 'user' | 'model' | 'assistant', parts?: any[], content?: string }[], prompt: string, user: UserProfile, imageData?: string) => {
   const language = user.language || 'en';
-  const userContext = `User Profile: Name: ${user.name}, Week: ${user.currentWeek}, Age: ${user.age || 'N/A'}, Weight: ${user.weight || 'N/A'}kg, Pregnancy: ${user.pregnancyNumber || 1}${user.pregnancyNumber === 1 ? 'st' : user.pregnancyNumber === 2 ? 'nd' : 'rd'}.`;
+  const userContext = `User Profile: Name: ${user.name}, Week: ${user.currentWeek}, Age: ${user.age || 'N/A'}, Weight: ${user.weight || 'N/A'}kg, Blood Group: ${user.bloodGroup || 'N/A'}, Pregnancy: ${user.pregnancyNumber || 1}${user.pregnancyNumber === 1 ? 'st' : user.pregnancyNumber === 2 ? 'nd' : 'rd'}.`;
   
   const systemInstruction = language === 'bn' 
     ? `আপনি একজন অভিজ্ঞ বাংলাদেশী মাতৃত্বকালীন সঙ্গী এবং নার্স যার নাম 'Maa Care AI'। ${userContext} আপনি বাংলাদেশের প্রেক্ষাপটে উষ্ণ, বড় বোনের মতো (Apu/Didi) পরামর্শ প্রদান করেন। আপনি জানেন বাংলাদেশের সাধারণ খাবার (যেমন মাছ, ভাত, ডাল, শাক) এবং স্থানীয় প্রচলিত ধারণাগুলো সম্পর্কে। বিজ্ঞানভিত্তিক তথ্যের পাশাপাশি সহানুভূতি দিয়ে কথা বলুন। জরুরি সমস্যায় সর্বদা ডাক্তার দেখানোর পরামর্শ দেবেন।`
@@ -119,7 +119,7 @@ export const getAIChatResponse = async (history: { role: 'user' | 'model' | 'ass
 export const checkSymptomsAI = async (user: UserProfile, symptoms: string[], notes: string) => {
   const language = user.language || 'en';
   const week = user.currentWeek || 1;
-  const userContext = `User Profile: Age: ${user.age || 'N/A'}, Weight: ${user.weight || 'N/A'}kg, Pregnancy: ${user.pregnancyNumber || 1}${user.pregnancyNumber === 1 ? 'st' : user.pregnancyNumber === 2 ? 'nd' : 'rd'}.`;
+  const userContext = `User Profile: Age: ${user.age || 'N/A'}, Weight: ${user.weight || 'N/A'}kg, Blood Group: ${user.bloodGroup || 'N/A'}, Pregnancy: ${user.pregnancyNumber || 1}${user.pregnancyNumber === 1 ? 'st' : user.pregnancyNumber === 2 ? 'nd' : 'rd'}.`;
 
   const systemInstruction = language === 'bn'
     ? `আপনি একজন বিশেষজ্ঞ বাংলাদেশী মাতৃত্বকালীন নার্স। ${userContext} ব্যবহারকারীর লক্ষণগুলো বিশ্লেষণ করুন।
@@ -192,10 +192,10 @@ export const getDashboardInsight = async (user: UserProfile, logs: any[]) => {
   const language = user.language || 'en';
   const week = user.currentWeek || 1;
   const name = user.name || 'Mama';
-  const userContext = `User Profile: Age: ${user.age || 'N/A'}, Weight: ${user.weight || 'N/A'}kg, Pregnancy: ${user.pregnancyNumber || 1}${user.pregnancyNumber === 1 ? 'st' : user.pregnancyNumber === 2 ? 'nd' : 'rd'}.`;
+  const userContext = `User Profile: Age: ${user.age || 'N/A'}, Weight: ${user.weight || 'N/A'}kg, Blood Group: ${user.bloodGroup || 'N/A'}, Pregnancy: ${user.pregnancyNumber || 1}${user.pregnancyNumber === 1 ? 'st' : user.pregnancyNumber === 2 ? 'nd' : 'rd'}.`;
   
   const logsSummary = logs.length > 0 
-    ? "Recent health logs: " + logs.slice(0, 3).map(l => `Mood: ${l.mood}, Symptoms: ${l.symptoms.join(', ')}`).join('; ')
+    ? "Recent health logs: " + logs.slice(0, 3).map(l => `Mood: ${l.mood}, Symptoms: ${l.symptoms.join(', ')}, BP: ${l.bloodPressure || 'N/A'}, Glucose: ${l.glucose || 'N/A'}`).join('; ')
     : "No recent health logs recorded.";
     
   const systemInstruction = language === 'bn'
@@ -250,8 +250,8 @@ export const getHealthInsight = async (user: UserProfile, logs: any[]) => {
   const language = user.language || 'en';
   const name = user.name || 'Mama';
   const week = user.currentWeek || 1;
-  const userContext = `User Profile: Age: ${user.age || 'N/A'}, Weight: ${user.weight || 'N/A'}kg, Pregnancy: ${user.pregnancyNumber || 1}${user.pregnancyNumber === 1 ? 'st' : user.pregnancyNumber === 2 ? 'nd' : 'rd'}.`;
-  const logsSummary = logs.map(l => `Date: ${l.date}, Mood: ${l.mood}, Symptoms: ${l.symptoms.join(', ')}`).join('; ');
+  const userContext = `User Profile: Age: ${user.age || 'N/A'}, Weight: ${user.weight || 'N/A'}kg, Blood Group: ${user.bloodGroup || 'N/A'}, Pregnancy: ${user.pregnancyNumber || 1}${user.pregnancyNumber === 1 ? 'st' : user.pregnancyNumber === 2 ? 'nd' : 'rd'}.`;
+  const logsSummary = logs.map(l => `Date: ${l.date}, Mood: ${l.mood}, Symptoms: ${l.symptoms.join(', ')}, BP: ${l.bloodPressure || 'N/A'}, Glucose: ${l.glucose || 'N/A'}`).join('; ');
   
   const systemInstruction = language === 'bn'
     ? `আপনি 'Maa Care AI', একজন বিশেষজ্ঞ মাতৃত্বকালীন সঙ্গী। আপনি ${name}-কে তার গর্ভাবস্থার ${week} সপ্তাহে তার স্বাস্থ্য ডায়েরি বিশ্লেষণ করে পরামর্শ দিচ্ছেন। ${userContext} আপনার পরামর্শগুলো বাংলাদেশের প্রেক্ষাপটে হতে হবে।`
@@ -298,10 +298,10 @@ export const getHealthInsight = async (user: UserProfile, logs: any[]) => {
   return null;
 };
 
-export const generateBabyNames = async (preference: string, language: Language = 'en') => {
+export const getBabyDevelopmentInfo = async (week: number, language: Language = 'en') => {
   const prompt = language === 'bn'
-    ? `বাংলাদেশের প্রেক্ষাপটে সুন্দর ও অর্থবহ শিশুর নামের তালিকা দিন। পছন্দ: ${preference}। অর্থসহ লিখুন।`
-    : `Suggest meaningful Bangladeshi baby names based on these preferences: ${preference}. Include the meaning for each name.`;
+    ? `গর্ভাবস্থার ${week} সপ্তাহে শিশুর বিকাশ সম্পর্কে একটি সংক্ষিপ্ত এবং সুন্দর বর্ণনা দিন। শিশুটি এখন দেখতে কেমন এবং কী কী নতুন অঙ্গ বা ক্ষমতা তৈরি হয়েছে তা ১-২ বাক্যে লিখুন।`
+    : `Give a short, beautiful description of baby's development at week ${week} of pregnancy. Describe what the baby looks like and what new organs or abilities have developed in 1-2 sentences.`;
 
   // Try Gemini
   if (API_KEY && !API_KEY.startsWith("sk-or-")) {
@@ -313,7 +313,7 @@ export const generateBabyNames = async (preference: string, language: Language =
       });
       if (response && response.text) return response.text;
     } catch (error) {
-      console.error("Gemini Baby Names Error, falling back to OpenAI/OpenRouter:", error);
+      console.error("Gemini Baby Dev Error:", error);
     }
   }
 
@@ -326,7 +326,7 @@ export const generateBabyNames = async (preference: string, language: Language =
       });
       return response.choices[0].message.content || "";
     } catch (error) {
-      console.error("OpenAI/OpenRouter Baby Names Error:", error);
+      console.error("OpenAI Baby Dev Error:", error);
     }
   }
 
@@ -349,13 +349,17 @@ export function decode(base64: string) {
 }
 
 export async function decodeAudioData(data: Uint8Array, ctx: AudioContext, sampleRate: number, numChannels: number): Promise<AudioBuffer> {
-  const dataInt16 = new Int16Array(data.buffer, data.byteOffset, data.byteLength / 2);
-  const frameCount = dataInt16.length / numChannels;
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const frameCount = Math.floor(data.byteLength / (2 * numChannels));
   const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
+  
   for (let channel = 0; channel < numChannels; channel++) {
     const channelData = buffer.getChannelData(channel);
     for (let i = 0; i < frameCount; i++) {
-      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+      const offset = (i * numChannels + channel) * 2;
+      if (offset + 1 < data.byteLength) {
+        channelData[i] = view.getInt16(offset, true) / 32768.0;
+      }
     }
   }
   return buffer;
