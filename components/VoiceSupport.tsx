@@ -24,6 +24,24 @@ const VoiceSupport: React.FC<Props> = ({ user, onBack }) => {
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const sessionRef = useRef<any>(null);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (sessionRef.current) {
+        sessionRef.current.close();
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+      if (inputAudioContextRef.current) {
+        inputAudioContextRef.current.close();
+      }
+    };
+  }, []);
+
   /**
    * Starts a Live API session for real-time voice interaction.
    */
@@ -164,6 +182,15 @@ const VoiceSupport: React.FC<Props> = ({ user, onBack }) => {
     }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    if (inputAudioContextRef.current) {
+      inputAudioContextRef.current.close();
+      inputAudioContextRef.current = null;
     }
     setIsActive(false);
     setStatus(t.tapToStart);
