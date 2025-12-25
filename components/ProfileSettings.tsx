@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserProfile, Language } from '../types';
-import { Shield, LogOut, ChevronRight, Camera, Globe, Check, X, ArrowLeft, Loader2, User, Phone, Calendar, Hash, Activity, Download, Trash2, Languages, Heart, AlertCircle, Droplets } from 'lucide-react';
+import { Shield, LogOut, ChevronRight, Camera, ArrowLeft, Loader2, User, Phone, Calendar, Hash, Activity, Download, Trash2, Languages, AlertCircle, Droplets } from 'lucide-react';
 import SettingsCard from './SettingsCard';
 import Input from './Input';
 import { translations } from '../translations';

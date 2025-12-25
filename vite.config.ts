@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
           injectRegister: 'auto',
           workbox: {
             cleanupOutdatedCaches: true,
-            globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}']
+            globPatterns: ['**/*.{js,html,svg}']
           },
           includeAssets: ['mask-icon.svg'],
           manifest: {

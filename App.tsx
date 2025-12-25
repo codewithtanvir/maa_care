@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { View, UserProfile, Language } from './types';
+import { View, UserProfile } from './types';
 import Dashboard from './components/Dashboard';
 import ChatSupport from './components/ChatSupport';
 import VoiceSupport from './components/VoiceSupport';
@@ -12,8 +12,14 @@ import FoodSafety from './components/FoodSafety';
 import Onboarding from './components/Onboarding';
 import SymptomChecker from './components/SymptomChecker';
 import Appointments from './components/Appointments';
+import MoodTracker from './components/MoodTracker';
+import Notifications from './components/Notifications';
+import MoodPopup from './components/MoodPopup';
+import NutritionGuide from './components/NutritionGuide';
+import EmergencyContacts from './components/EmergencyContacts';
 import { Home, MessageCircle, Activity, User as UserIcon, Calendar, X } from 'lucide-react';
 import { translations } from './translations';
+import { supabase } from './services/supabaseClient';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -21,6 +27,20 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.DASHBOARD);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [showMoodPopup, setShowMoodPopup] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const timer = setTimeout(() => {
+        setShowMoodPopup(true);
+      }, 1500); // Show after 1.5 seconds for better UX
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, user]);
+
+  const handleMoodPopupClose = () => {
+    setShowMoodPopup(false);
+  };
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -29,8 +49,12 @@ const App: React.FC = () => {
       e.preventDefault();
       // Stash the event so it can be triggered later.
       setDeferredPrompt(e);
-      // Update UI notify the user they can install the PWA
-      setShowInstallBanner(true);
+      
+      // Only show if not dismissed in this session
+      const isDismissed = sessionStorage.getItem('pwa_banner_dismissed');
+      if (!isDismissed) {
+        setShowInstallBanner(true);
+      }
     };
 
     // Check if already installed
@@ -145,6 +169,14 @@ const App: React.FC = () => {
         return <SymptomChecker user={user} onBack={() => setCurrentView(View.DASHBOARD)} onNavigate={setCurrentView} />;
       case View.APPOINTMENTS:
         return <Appointments user={user} onBack={() => setCurrentView(View.DASHBOARD)} />;
+      case View.MOOD_TRACKER:
+        return <MoodTracker user={user} onBack={() => setCurrentView(View.DASHBOARD)} />;
+      case View.NOTIFICATIONS:
+        return <Notifications user={user} onBack={() => setCurrentView(View.DASHBOARD)} />;
+      case View.NUTRITION:
+        return <NutritionGuide user={user} onBack={() => setCurrentView(View.DASHBOARD)} />;
+      case View.EMERGENCY:
+        return <EmergencyContacts user={user} onBack={() => setCurrentView(View.DASHBOARD)} />;
       default: 
         return <Dashboard user={user} onNavigate={setCurrentView} />;
     }
@@ -181,7 +213,10 @@ const App: React.FC = () => {
                 {t.installBtn}
               </button>
               <button 
-                onClick={() => setShowInstallBanner(false)}
+                onClick={() => {
+                  setShowInstallBanner(false);
+                  sessionStorage.setItem('pwa_banner_dismissed', 'true');
+                }}
                 className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <X size={18} />
@@ -192,6 +227,10 @@ const App: React.FC = () => {
         <main className={`flex-1 w-full ${hasInternalScroll ? 'overflow-hidden' : 'overflow-y-auto'}`}>
           {renderView()}
         </main>
+
+        {showMoodPopup && user && (
+          <MoodPopup user={user} onClose={handleMoodPopupClose} />
+        )}
 
         <nav className="w-full h-[80px] bg-white/80 backdrop-blur-lg border-t border-gray-100 flex items-center justify-around px-2 safe-area-bottom z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
           {navItems.map((item) => {

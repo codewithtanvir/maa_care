@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { LogEntry, Language, View, UserProfile } from '../types';
-import { Plus, Clipboard, Smile, Frown, Zap, Coffee, Ghost, Sparkles, Trash2, X, Stethoscope, Lightbulb, ArrowLeft, Loader2, Baby, ChevronRight } from 'lucide-react';
+import { Plus, Clipboard, Smile, Frown, Zap, Coffee, Ghost, Sparkles, Trash2, X, Stethoscope, ArrowLeft, Loader2, Baby } from 'lucide-react';
 import { getHealthInsight, getBabyDevelopmentInfo } from '../services/geminiService';
 import { translations } from '../translations';
 import { supabase } from '../services/supabaseClient';
@@ -136,16 +136,23 @@ const HealthTracker: React.FC<Props> = ({ user, onNavigate, onBack }) => {
 
   const handleAddLog = async () => {
     if (!user.id) return;
+
+    // Validation
+    if (weight && isNaN(parseFloat(weight))) {
+      alert(language === 'bn' ? 'ওজন অবশ্যই একটি সংখ্যা হতে হবে' : 'Weight must be a number');
+      return;
+    }
+
     try {
       const newLogData = {
         user_id: user.id,
         date: new Date().toISOString().split('T')[0],
-        weight: parseFloat(weight) || null,
+        weight: weight ? parseFloat(weight) : null,
         mood,
         symptoms,
         notes,
         blood_pressure: bloodPressure || null,
-        glucose: parseFloat(glucose) || null
+        glucose: glucose ? parseFloat(glucose) : null
       };
 
       const { data, error } = await supabase
@@ -153,6 +160,14 @@ const HealthTracker: React.FC<Props> = ({ user, onNavigate, onBack }) => {
         .insert(newLogData)
         .select()
         .single();
+
+      if (error) {
+        console.error("Error adding log:", error);
+        alert(language === 'bn' 
+          ? 'সংরক্ষণ ব্যর্থ। আবার লগইন করুন।'
+          : 'Failed to save. Please login again.');
+        return;
+      }
 
       if (data) {
         const newLog: LogEntry = {
@@ -171,6 +186,9 @@ const HealthTracker: React.FC<Props> = ({ user, onNavigate, onBack }) => {
       }
     } catch (e) {
       console.error("Error adding log", e);
+      alert(language === 'bn' 
+        ? 'সংরক্ষণ ব্যর্থ। আবার চেষ্টা করুন।'
+        : 'Failed to save. Please try again.');
     }
   };
 

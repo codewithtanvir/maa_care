@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  maa-care:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: maa-care-app
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - maa-care-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  maa-care-network:
+    driver: bridge

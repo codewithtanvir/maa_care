@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { UserProfile, Appointment } from '../types';
-import { Calendar, Plus, Trash2, Clock, MapPin, X, ArrowLeft, Loader2, ChevronRight } from 'lucide-react';
+import { Calendar, Plus, Trash2, Clock, MapPin, X, ArrowLeft, Loader2 } from 'lucide-react';
 import { translations } from '../translations';
 import { supabase } from '../services/supabaseClient';
 
@@ -67,6 +67,14 @@ const Appointments: React.FC<Props> = ({ user, onBack }) => {
         }])
         .select();
 
+      if (error) {
+        console.error("Error adding appointment:", error);
+        alert(user.language === 'bn' 
+          ? 'অ্যাপয়েন্টমেন্ট যোগ করতে ব্যর্থ। আবার লগইন করুন।'
+          : 'Failed to add appointment. Please login again.');
+        return;
+      }
+
       if (data) {
         setAppointments([...appointments, {
           id: data[0].id,
@@ -84,6 +92,9 @@ const Appointments: React.FC<Props> = ({ user, onBack }) => {
       }
     } catch (e) {
       console.error("Error adding appointment", e);
+      alert(user.language === 'bn' 
+        ? 'অ্যাপয়েন্টমেন্ট যোগ করতে ব্যর্থ। আবার চেষ্টা করুন।'
+        : 'Failed to add appointment. Please try again.');
     }
   };
 

@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { UserProfile, View, LogEntry, Appointment } from '../types';
-import { getDashboardInsight, getBabyDevelopmentInfo } from '../services/geminiService';
-import { RefreshCw, Info, Briefcase, Footprints, Brain, MapPin, Clock, Stethoscope, ChevronRight, Mic, Baby, Heart, Sparkles } from 'lucide-react';
+import { UserProfile, View, Appointment } from '../types';
+import { getDashboardInsight } from '../services/geminiService';
+import { RefreshCw, Info, Briefcase, Footprints, Brain, MapPin, Clock, ChevronRight, Mic, Baby, Heart, Bell, Apple, ShieldAlert } from 'lucide-react';
 import { translations } from '../translations';
 import { supabase } from '../services/supabaseClient';
 
@@ -36,10 +36,27 @@ const Dashboard: React.FC<Props> = ({ user, onNavigate }) => {
     return user.language === 'bn' ? 'শুভ সন্ধ্যা' : 'Good Evening';
   };
 
-  const fetchInsight = async () => {
+  const fetchInsight = async (force = false) => {
     if (!user?.currentWeek || !user?.id) return;
+    
+    // Check cache
+    const cacheKey = `dashboard_insight_${user.id}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (!force && cached) {
+      try {
+        const { text, timestamp } = JSON.parse(cached);
+        const oneHour = 60 * 60 * 1000;
+        if (Date.now() - timestamp < oneHour) {
+          setInsight(text);
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to parse cached insight", e);
+      }
+    }
+
     setLoadingInsight(true);
-    setInsight(null); // Clear previous insight
+    setInsight(null); 
     try {
       const { data: logs, error } = await supabase
         .from('health_logs')
@@ -51,7 +68,10 @@ const Dashboard: React.FC<Props> = ({ user, onNavigate }) => {
       if (error) throw error;
 
       const res = await getDashboardInsight(user, logs || []);
-      setInsight(res || null);
+      if (res) {
+        setInsight(res);
+        localStorage.setItem(cacheKey, JSON.stringify({ text: res, timestamp: Date.now() }));
+      }
     } catch (e) {
       console.error("Insight error:", e);
       setInsight((user?.language || 'en') === 'bn' ? "আজ পুষ্টিকর খাবার খান!" : "Focus on nutrition today!");
@@ -119,13 +139,21 @@ const Dashboard: React.FC<Props> = ({ user, onNavigate }) => {
               </h1>
             </div>
           </div>
-          <button 
-            onClick={() => onNavigate(View.PROFILE)}
-            className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-xl shadow-pink-50 border border-pink-50 active:scale-90 transition-all relative group flex-shrink-0 animate-in slide-in-from-right duration-700"
-          >
-            <Heart className="text-pink-500 group-hover:fill-pink-500 transition-all" fill="#fce7f3" size={24} />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full border-2 border-white animate-pulse" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => onNavigate(View.NOTIFICATIONS)}
+              className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-xl shadow-pink-50 border border-pink-50 active:scale-90 transition-all relative group flex-shrink-0 animate-in slide-in-from-right duration-700"
+            >
+              <Bell className="text-gray-400 group-hover:text-pink-500 transition-all" size={24} />
+              <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-pink-500 rounded-full border-2 border-white" />
+            </button>
+            <button 
+              onClick={() => onNavigate(View.PROFILE)}
+              className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-xl shadow-pink-50 border border-pink-50 active:scale-90 transition-all relative group flex-shrink-0 animate-in slide-in-from-right duration-700"
+            >
+              <Heart className="text-pink-500 group-hover:fill-pink-500 transition-all" fill="#fce7f3" size={24} />
+            </button>
+          </div>
         </header>
 
         {/* Main Progress Card - Premium Redesign */}
@@ -199,7 +227,7 @@ const Dashboard: React.FC<Props> = ({ user, onNavigate }) => {
               </div>
             </div>
             <button 
-              onClick={fetchInsight}
+              onClick={() => fetchInsight(true)}
               disabled={loadingInsight}
               className="w-8 h-8 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center transition-all active:scale-90 disabled:opacity-50 border border-white/10"
             >
@@ -307,6 +335,54 @@ const Dashboard: React.FC<Props> = ({ user, onNavigate }) => {
                 <div>
                   <p className="font-black text-gray-900 text-base tracking-tight">{t.hospitalBag}</p>
                   <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-0.5">{user.language === 'bn' ? 'চেকলিস্ট' : 'Checklist'}</p>
+                </div>
+              </div>
+            </button>
+
+            <button 
+              onClick={() => onNavigate(View.MOOD_TRACKER)} 
+              className="group relative bg-white p-5 rounded-[2rem] border border-pink-50 shadow-sm hover:border-pink-200 hover:shadow-xl hover:shadow-pink-100/50 transition-all duration-500 active:scale-95 overflow-hidden"
+            >
+              <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-pink-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700" />
+              <div className="relative z-10 flex flex-col gap-3">
+                <div className="w-12 h-12 bg-pink-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-pink-200 group-hover:rotate-6 transition-transform">
+                  <Heart size={24} />
+                </div>
+                <div>
+                  <p className="font-black text-gray-900 text-base tracking-tight">{t.moodTracker}</p>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-0.5">{user.language === 'bn' ? 'মন মেজাজ' : 'Mood'}</p>
+                </div>
+              </div>
+            </button>
+
+            <button 
+              onClick={() => onNavigate(View.NUTRITION)} 
+              className="group relative bg-white p-5 rounded-[2rem] border border-green-50 shadow-sm hover:border-green-200 hover:shadow-xl hover:shadow-green-100/50 transition-all duration-500 active:scale-95 overflow-hidden"
+            >
+              <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-green-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700" />
+              <div className="relative z-10 flex flex-col gap-3">
+                <div className="w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-green-200 group-hover:rotate-6 transition-transform">
+                  <Apple size={24} />
+                </div>
+                <div>
+                  <p className="font-black text-gray-900 text-base tracking-tight">{t.nutrition}</p>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-0.5">{user.language === 'bn' ? 'পুষ্টি ও যত্ন' : 'Nutrition'}</p>
+                </div>
+              </div>
+            </button>
+
+            <button 
+              onClick={() => onNavigate(View.EMERGENCY)} 
+              className="group relative bg-white p-5 rounded-[2rem] border border-red-50 shadow-sm hover:border-red-200 hover:shadow-xl hover:shadow-red-100/50 transition-all duration-500 active:scale-95 overflow-hidden"
+            >
+              <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-red-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700" />
+              <div className="relative z-10 flex flex-col gap-3">
+                <div className="w-12 h-12 bg-red-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-red-200 group-hover:rotate-6 transition-transform">
+                  <ShieldAlert size={24} />
+                </div>
+                <div>
+                  <p className="font-black text-gray-900 text-base tracking-tight">{t.emergency}</p>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-0.5">{user.language === 'bn' ? 'জরুরি' : 'Emergency'}</p>
                 </div>
               </div>
             </button>

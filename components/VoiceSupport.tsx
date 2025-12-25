@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, Modality } from '@google/genai';
-import { Mic, MicOff, PhoneOff, Waveform, ArrowLeft } from 'lucide-react';
+import { Mic, MicOff, PhoneOff, ArrowLeft } from 'lucide-react';
 import { decode, decodeAudioData, encode } from '../services/geminiService';
 import { Language, UserProfile } from '../types';
 import { translations } from '../translations';
@@ -67,8 +67,8 @@ const VoiceSupport: React.FC<Props> = ({ user, onBack }) => {
       const userContext = `User Profile: Name: ${user.name}, Week: ${user.currentWeek}, Age: ${user.age || 'N/A'}, Weight: ${user.weight || 'N/A'}kg, Pregnancy: ${user.pregnancyNumber || 1}${user.pregnancyNumber === 1 ? 'st' : user.pregnancyNumber === 2 ? 'nd' : 'rd'}.`;
 
       const systemInstruction = language === 'bn'
-        ? `আপনি একজন শান্ত, সহায়ক মাতৃত্বকালীন নার্স যার নাম কোরে। ${userContext} আপনার কণ্ঠস্বর আরামদায়ক। আপনি গর্ভবতী মায়েদের মানসিক চাপ, গভীর রাতের প্রশ্ন বা শুধু কথা শোনার জন্য সাহায্য করেন। উত্তরগুলি ছোট এবং কথোপকথনমূলক রাখুন। অবশ্যই বাংলায় কথা বলুন।`
-        : `You are a calm, supportive maternity nurse named Kore. ${userContext} Your voice is soothing. You help expectant mothers with stress, late-night questions, or just provide a listening ear. Keep responses short and conversational. Speak in English.`;
+        ? `আপনি একজন শান্ত, সহায়ক মাতৃত্বকালীন নার্স যার নাম কোরে। ${userContext} আপনার কণ্ঠস্বর আরামদায়ক। আপনি গর্ভবতী মায়েদের মানসিক চাপ, গভীর রাতের প্রশ্ন বা শুধু কথা শোনার জন্য সাহায্য করেন। উত্তরগুলি ছোট এবং কথোপকথনমূলক রাখুন। আপনার সমস্ত উত্তর অবশ্যই বাংলায় হতে হবে।`
+        : `You are a calm, supportive maternity nurse named Kore. ${userContext} Your voice is soothing. You help expectant mothers with stress, late-night questions, or just provide a listening ear. Keep responses short and conversational. Your responses must be in English.`;
 
       if (!(ai as any).live) {
         throw new Error("Live API not supported by this SDK version.");

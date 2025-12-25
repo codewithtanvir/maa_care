@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, User, Bot, Sparkles, Camera, Image as ImageIcon, X, Trash2, ArrowLeft, Loader2 } from 'lucide-react';
+import { Send, User, Bot, Camera, X, Trash2, ArrowLeft } from 'lucide-react';
 import { Message, Language, UserProfile } from '../types';
 import { getAIChatResponse } from '../services/geminiService';
 import { translations } from '../translations';
@@ -89,13 +89,17 @@ const ChatSupport: React.FC<Props> = ({ user, onBack }) => {
 
     try {
       // Save user message to Supabase
-      await supabase.from('chat_messages').insert({
+      const { error: userMsgError } = await supabase.from('chat_messages').insert({
         user_id: user.id,
         role: 'user',
         content: userMsg.content,
         image_url: userMsg.image,
         timestamp: new Date(userMsg.timestamp).toISOString()
       });
+      
+      if (userMsgError) {
+        console.error("Error saving user message:", userMsgError);
+      }
 
       const history = messages.slice(-10).map(m => ({
         role: m.role === 'user' ? 'user' as const : 'model' as const,
@@ -112,12 +116,16 @@ const ChatSupport: React.FC<Props> = ({ user, onBack }) => {
       };
 
       // Save assistant message to Supabase
-      await supabase.from('chat_messages').insert({
+      const { error: assistantMsgError } = await supabase.from('chat_messages').insert({
         user_id: user.id,
         role: 'assistant',
         content: assistantMsg.content,
         timestamp: new Date(assistantMsg.timestamp).toISOString()
       });
+      
+      if (assistantMsgError) {
+        console.error("Error saving assistant message:", assistantMsgError);
+      }
 
       setMessages(prev => [...prev, assistantMsg]);
     } catch (error) {

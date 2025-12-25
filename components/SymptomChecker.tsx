@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { ArrowLeft, Sparkles, CheckCircle2, AlertTriangle, AlertCircle, RefreshCw, Activity, ChevronRight, ClipboardCheck, PhoneCall, Loader2 } from 'lucide-react';
+import { ArrowLeft, Sparkles, CheckCircle2, AlertTriangle, AlertCircle, RefreshCw, Activity, ClipboardCheck, PhoneCall, Loader2 } from 'lucide-react';
 import { checkSymptomsAI } from '../services/geminiService';
 import { Language, LogEntry, View, UserProfile } from '../types';
 import { translations } from '../translations';
@@ -36,27 +36,44 @@ const SymptomChecker: React.FC<Props> = ({ user, onBack, onNavigate }) => {
     setResult(null);
     try {
       const res = await checkSymptomsAI(user, selectedSymptoms, notes);
-      const lines = res.split('\n');
-      const firstLine = lines[0];
-      const [statusRaw, ...titleParts] = firstLine.split(' - ');
       
-      const status = statusRaw.replace('[', '').replace(']', '').trim().toUpperCase();
-      const title = titleParts.join(' - ').trim();
+      // Improved parsing logic
+      const lines = res.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      let status = 'MONITOR';
+      let title = language === 'bn' ? 'বিশ্লেষণ সম্পন্ন' : 'Analysis Complete';
+      
+      const firstLine = lines[0] || '';
+      if (firstLine.includes('[') && firstLine.includes(']')) {
+        const statusMatch = firstLine.match(/\[(.*?)\]/);
+        if (statusMatch) {
+          status = statusMatch[1].toUpperCase();
+          title = firstLine.split(']')[1]?.replace('-', '').trim() || title;
+        }
+      }
 
       const sections: { heading: string; body: string }[] = [];
       let currentHeading = '';
       let currentBody = '';
 
-      lines.slice(1).forEach(line => {
-        if (line.startsWith('###')) {
+      lines.forEach(line => {
+        if (line.startsWith('###') || line.startsWith('**') && line.endsWith('**')) {
           if (currentHeading) sections.push({ heading: currentHeading, body: currentBody.trim() });
-          currentHeading = line.replace('###', '').trim();
+          currentHeading = line.replace(/[#*]/g, '').trim();
           currentBody = '';
-        } else {
+        } else if (!line.includes('[STATUS]')) {
           currentBody += line + '\n';
         }
       });
-      if (currentHeading) sections.push({ heading: currentHeading, body: currentBody.trim() });
+      
+      if (currentHeading) {
+        sections.push({ heading: currentHeading, body: currentBody.trim() });
+      } else if (lines.length > 1) {
+        // Fallback if no headings found
+        sections.push({ 
+          heading: language === 'bn' ? 'বিস্তারিত বিশ্লেষণ' : 'Detailed Analysis', 
+          body: lines.slice(1).join('\n') 
+        });
+      }
 
       setResult({ status, title, sections });
     } catch (e) {
@@ -72,7 +89,7 @@ const SymptomChecker: React.FC<Props> = ({ user, onBack, onNavigate }) => {
     
     const newEntry = {
       user_id: user.id,
-      date: new Date().toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US'),
+      date: new Date().toISOString().split('T')[0],
       mood: 'nauseous',
       symptoms: selectedSymptoms,
       notes: `AI Assessment: ${result.status} - ${result.title}. ${notes}`

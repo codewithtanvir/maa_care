@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Timer, RotateCcw, Footprints, History, Loader2 } from 'lucide-react';
-import { Language, UserProfile } from '../types';
+import { UserProfile } from '../types';
 import { translations } from '../translations';
 import { supabase } from '../services/supabaseClient';
 

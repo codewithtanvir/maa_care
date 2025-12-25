@@ -26,3 +26,12 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Temporary files
+*.tmp
+~*
+dev-dist/
+
+# Hackathon Submission Docs
+HACKATHON_SUBMISSION.html
+HACKATHON_SUBMISSION_files/

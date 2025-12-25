@@ -6,8 +6,6 @@ import { supabase } from '../services/supabaseClient';
 import { 
   ArrowRight, 
   Baby, 
-  MessageCircle, 
-  Mic, 
   Activity, 
   Sparkles, 
   Check,

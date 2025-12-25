@@ -10,7 +10,11 @@ export enum View {
   FOOD_SAFETY = 'food_safety',
   SYMPTOM_CHECKER = 'symptom_checker',
   ONBOARDING = 'onboarding',
-  APPOINTMENTS = 'appointments'
+  APPOINTMENTS = 'appointments',
+  MOOD_TRACKER = 'mood_tracker',
+  NOTIFICATIONS = 'notifications',
+  NUTRITION = 'nutrition',
+  EMERGENCY = 'emergency'
 }
 
 export type Language = 'en' | 'bn';
@@ -34,6 +38,17 @@ export interface UserProfile {
   appointments?: Appointment[];
   kick_history?: any[];
   hospital_bag?: any[];
+  notifications?: Notification[];
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  body: string;
+  type: string;
+  is_read: boolean;
+  scheduled_for?: string;
+  created_at: string;
 }
 
 export interface Appointment {
