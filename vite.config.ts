@@ -3,6 +3,7 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Last Build Trigger: 2025-12-25 17:15
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
