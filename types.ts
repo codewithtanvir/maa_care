@@ -5,7 +5,6 @@ export enum View {
   VOICE = 'voice',
   TRACKER = 'tracker',
   PROFILE = 'profile',
-  HOSPITAL_BAG = 'hospital_bag',
   KICK_COUNTER = 'kick_counter',
   FOOD_SAFETY = 'food_safety',
   SYMPTOM_CHECKER = 'symptom_checker',
@@ -38,7 +37,6 @@ export interface UserProfile {
   avatarSeed?: string;
   appointments?: Appointment[];
   kick_history?: any[];
-  hospital_bag?: any[];
   notifications?: Notification[];
 }
 

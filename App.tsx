@@ -6,7 +6,6 @@ import ChatSupport from './components/ChatSupport';
 import VoiceSupport from './components/VoiceSupport';
 import HealthTracker from './components/HealthTracker';
 import ProfileSettings from './components/ProfileSettings';
-import HospitalBag from './components/HospitalBag';
 import KickCounter from './components/KickCounter';
 import Onboarding from './components/Onboarding';
 import SymptomChecker from './components/SymptomChecker';
@@ -16,7 +15,7 @@ import Notifications from './components/Notifications';
 import NutritionCare from './components/NutritionCare';
 import EmergencyContacts from './components/EmergencyContacts';
 import ContractionTimer from './components/ContractionTimer';
-import { Home, MessageCircle, Activity, User as UserIcon, Calendar, X } from 'lucide-react';
+import { Home, MessageCircle, Activity, Calendar, X, Stethoscope } from 'lucide-react';
 import { translations } from './translations';
 import { supabase } from './services/supabaseClient';
 
@@ -144,8 +143,6 @@ const App: React.FC = () => {
             canInstall={!!deferredPrompt}
           />
         );
-      case View.HOSPITAL_BAG: 
-        return <HospitalBag user={user} onBack={() => setCurrentView(View.DASHBOARD)} />;
       case View.KICK_COUNTER: 
         return <KickCounter user={user} onBack={() => setCurrentView(View.DASHBOARD)} />;
       case View.FOOD_SAFETY:
@@ -171,12 +168,12 @@ const App: React.FC = () => {
   const navItems = [
     { view: View.DASHBOARD, icon: Home, label: t.home },
     { view: View.TRACKER, icon: Activity, label: t.tracker },
-    { view: View.APPOINTMENTS, icon: Calendar, label: t.appointments },
     { view: View.CHAT, icon: MessageCircle, label: t.chat },
-    { view: View.PROFILE, icon: UserIcon, label: t.profile }
+    { view: View.APPOINTMENTS, icon: Calendar, label: t.appointments },
+    { view: View.SYMPTOM_CHECKER, icon: Stethoscope, label: t.symptoms }
   ];
 
-  const isHomeGroup = [View.DASHBOARD, View.HOSPITAL_BAG, View.KICK_COUNTER, View.FOOD_SAFETY, View.SYMPTOM_CHECKER].includes(currentView);
+  const isHomeGroup = [View.DASHBOARD, View.KICK_COUNTER, View.FOOD_SAFETY, View.SYMPTOM_CHECKER].includes(currentView);
   const hasInternalScroll = [View.CHAT, View.VOICE, View.PROFILE, View.APPOINTMENTS].includes(currentView);
 
   return (
@@ -214,24 +211,31 @@ const App: React.FC = () => {
           {renderView()}
         </main>
 
-        <nav className="w-full h-[80px] bg-white/80 backdrop-blur-lg border-t border-gray-100 flex items-center justify-around px-2 safe-area-bottom z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        <nav className="w-full bg-white border-t border-slate-100 flex items-stretch justify-around px-2 pb-safe z-50">
           {navItems.map((item) => {
             const isActive = item.view === View.DASHBOARD ? isHomeGroup : currentView === item.view;
+            
             return (
               <button
                 key={item.view}
                 onClick={() => setCurrentView(item.view)}
-                className={`flex flex-col items-center justify-center w-full transition-all duration-200 relative ${
-                  isActive ? 'text-pink-700' : 'text-gray-500 hover:text-gray-700'
-                }`}
+                className="flex flex-col items-center justify-center py-2 px-3 flex-1 transition-all duration-200"
               >
-                <div className={`relative flex items-center justify-center w-12 h-8 rounded-full transition-all duration-300 ${
-                  isActive ? 'bg-pink-100' : 'bg-transparent'
+                <div className={`relative flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-200 ${
+                  isActive 
+                    ? 'bg-pink-500' 
+                    : 'bg-transparent'
                 }`}>
-                  <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                  <item.icon 
+                    size={22} 
+                    strokeWidth={2} 
+                    className={`transition-colors duration-200 ${
+                      isActive ? 'text-white' : 'text-gray-400'
+                    }`}
+                  />
                 </div>
-                <span className={`text-xs mt-1 transition-all duration-200 ${
-                  isActive ? 'font-black' : 'font-bold'
+                <span className={`text-[11px] mt-1 transition-all duration-200 ${
+                  isActive ? 'font-bold text-pink-600' : 'font-medium text-gray-400'
                 }`}>
                   {item.label}
                 </span>

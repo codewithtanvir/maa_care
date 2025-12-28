@@ -381,7 +381,7 @@ const ProfileSettings: React.FC<Props> = ({ user, onUpdate, onLogout, onBack, on
           {canInstall && onInstall && (
             <button 
               onClick={onInstall}
-              className="w-full p-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl shadow-lg shadow-indigo-200 flex items-center gap-4 active:scale-[0.98] transition-all"
+              className="w-full p-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl shadow-lg shadow-pink-200 flex items-center gap-4 active:scale-[0.98] transition-all"
             >
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                 <Download size={22} />

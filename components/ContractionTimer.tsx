@@ -395,12 +395,12 @@ const ContractionTimer: React.FC<Props> = ({ user, onBack }) => {
         </section>
 
         {/* Info Card */}
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl border-2 border-blue-100">
-          <h4 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
+        <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-4 rounded-2xl border-2 border-pink-100">
+          <h4 className="font-bold text-pink-800 mb-2 flex items-center gap-2">
             <AlertTriangle size={16} />
             {language === 'bn' ? 'কখন হাসপাতালে যাবেন' : 'When to Go to Hospital'}
           </h4>
-          <p className="text-sm text-blue-700 leading-relaxed">
+          <p className="text-sm text-pink-700 leading-relaxed">
             {language === 'bn'
               ? '5-1-1 নিয়ম মনে রাখুন: সংকোচন যখন প্রতি ৫ মিনিটে আসে, প্রতিটি ১ মিনিট বা তার বেশি স্থায়ী হয়, এবং এটি ১ ঘণ্টা বা তার বেশি সময় ধরে চলে - তখন হাসপাতালে যাওয়ার সময়।'
               : 'Remember the 5-1-1 rule: When contractions come every 5 minutes, last at least 1 minute each, and this pattern continues for at least 1 hour - it\'s time to go to the hospital.'}

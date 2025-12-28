@@ -391,10 +391,10 @@ const moodIcons = {
     const bpStatus = getBPStatus(latestBP.systolic, latestBP.diastolic);
 
     return (
-      <div className="bg-white p-5 rounded-[2rem] border border-indigo-50 shadow-sm space-y-4 animate-in fade-in duration-700">
+      <div className="bg-white p-5 rounded-[2rem] border border-pink-50 shadow-sm space-y-4 animate-in fade-in duration-700">
         <div className="flex justify-between items-center px-2">
           <div className="flex items-center gap-2">
-            <div className="w-1 h-3.5 bg-indigo-500 rounded-full" />
+            <div className="w-1 h-3.5 bg-rose-500 rounded-full" />
             <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">
               {language === 'bn' ? 'রক্তচাপ ট্র্যাকার' : 'Blood Pressure'}
             </h3>
@@ -407,12 +407,12 @@ const moodIcons = {
           <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
             <defs>
               <linearGradient id="systolicGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#6366f1" />
-                <stop offset="100%" stopColor="#8b5cf6" />
+                <stop offset="0%" stopColor="#ec4899" />
+                <stop offset="100%" stopColor="#f43f5e" />
               </linearGradient>
               <linearGradient id="diastolicGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#06b6d4" />
-                <stop offset="100%" stopColor="#22d3ee" />
+                <stop offset="0%" stopColor="#fb7185" />
+                <stop offset="100%" stopColor="#fda4af" />
               </linearGradient>
             </defs>
             
@@ -449,7 +449,7 @@ const moodIcons = {
               const x = (i / (bpLogs.length - 1)) * (width - padding * 2) + padding;
               const y = height - ((systolicValues[i] - minBP) / range) * (height - padding * 2) - padding;
               return (
-                <circle key={`sys-${i}`} cx={x} cy={y} r="4" fill="white" stroke="#6366f1" strokeWidth="2" />
+                <circle key={`sys-${i}`} cx={x} cy={y} r="4" fill="white" stroke="#ec4899" strokeWidth="2" />
               );
             })}
             
@@ -458,7 +458,7 @@ const moodIcons = {
               const x = (i / (bpLogs.length - 1)) * (width - padding * 2) + padding;
               const y = height - ((diastolicValues[i] - minBP) / range) * (height - padding * 2) - padding;
               return (
-                <circle key={`dia-${i}`} cx={x} cy={y} r="4" fill="white" stroke="#06b6d4" strokeWidth="2" />
+                <circle key={`dia-${i}`} cx={x} cy={y} r="4" fill="white" stroke="#fb7185" strokeWidth="2" />
               );
             })}
           </svg>
@@ -467,13 +467,13 @@ const moodIcons = {
         {/* Legend */}
         <div className="flex justify-center gap-6 pt-2">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-indigo-500" />
+            <div className="w-3 h-3 rounded-full bg-pink-500" />
             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
               {language === 'bn' ? 'সিস্টোলিক' : 'Systolic'}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-cyan-500" />
+            <div className="w-3 h-3 rounded-full bg-rose-300" />
             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
               {language === 'bn' ? 'ডায়াস্টোলিক' : 'Diastolic'}
             </span>
@@ -507,11 +507,11 @@ const moodIcons = {
         </div>
         
         {/* Blood Pressure */}
-        <div className="bg-gradient-to-br from-indigo-50 to-violet-50 p-4 rounded-2xl border border-indigo-100/50">
-          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">
+        <div className="bg-gradient-to-br from-rose-50 to-pink-50 p-4 rounded-2xl border border-rose-100/50">
+          <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">
             {language === 'bn' ? 'রক্তচাপ' : 'BP'}
           </p>
-          <p className="text-lg font-black text-indigo-600">
+          <p className="text-lg font-black text-rose-600">
             {latestWithBP?.bloodPressure || '--/--'}
           </p>
           {bpStatus && (
@@ -522,11 +522,11 @@ const moodIcons = {
         </div>
         
         {/* Glucose */}
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-2xl border border-amber-100/50">
-          <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">
+        <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-4 rounded-2xl border border-pink-100/50">
+          <p className="text-[10px] font-black text-pink-400 uppercase tracking-widest mb-1">
             {language === 'bn' ? 'গ্লুকোজ' : 'Glucose'}
           </p>
-          <p className="text-lg font-black text-amber-600">
+          <p className="text-lg font-black text-pink-600">
             {latestWithGlucose?.glucose || '--'} <span className="text-xs font-bold">mg/dL</span>
           </p>
         </div>
@@ -554,14 +554,14 @@ const moodIcons = {
         <div className="flex gap-2">
           <button 
             onClick={() => onNavigate(View.SYMPTOM_CHECKER)}
-            className="bg-indigo-500 text-white p-3 rounded-full shadow-lg active:scale-95 transition-all"
+            className="bg-rose-400 text-white p-3 rounded-full shadow-lg shadow-rose-200 active:scale-95 transition-all"
             title={t.symptomChecker}
           >
             <Stethoscope size={24} />
           </button>
           <button 
             onClick={() => setIsAdding(true)}
-            className="bg-pink-500 text-white p-3 rounded-full shadow-lg active:scale-95 transition-all"
+            className="bg-pink-500 text-white p-3 rounded-full shadow-lg shadow-pink-200 active:scale-95 transition-all"
           >
             <Plus size={24} />
           </button>
@@ -652,7 +652,7 @@ const moodIcons = {
           </section>
 
           {/* Visual Reference */}
-          <div className="bg-indigo-600 rounded-[2rem] p-5 text-white relative overflow-hidden shadow-xl group">
+          <div className="bg-gradient-to-br from-pink-500 to-rose-600 rounded-[2rem] p-5 text-white relative overflow-hidden shadow-xl group">
             <div className="absolute right-0 bottom-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
               <Baby size={80} />
             </div>
@@ -668,7 +668,7 @@ const moodIcons = {
                 </div>
                 <div>
                   <p className="text-lg font-black tracking-tight">{t.fruitReference[(user?.currentWeek || 1) - 1] || 'Baby'}</p>
-                  <p className="text-indigo-100 text-xs font-medium opacity-90 mt-0.5">
+                  <p className="text-rose-100 text-xs font-medium opacity-90 mt-0.5">
                     {language === 'bn' ? 'আপনার শিশু এখন এই আকারের!' : 'Your baby is about this size now!'}
                   </p>
                 </div>
@@ -944,16 +944,16 @@ const moodIcons = {
               </div>
             </div>
 
-            <div className="flex gap-4 pt-4">
+            <div className="grid grid-cols-5 gap-3 pt-4">
               <button 
                 onClick={() => setIsAdding(false)}
-                className="flex-1 py-5 bg-gray-50 text-gray-500 rounded-[2rem] font-black uppercase tracking-widest text-xs hover:bg-gray-100 transition-colors"
+                className="col-span-2 py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold text-sm hover:bg-gray-200 transition-colors"
               >
                 {t.cancel}
               </button>
               <button 
                 onClick={handleAddLog}
-                className="flex-2 py-5 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-[2rem] font-black uppercase tracking-widest text-xs shadow-xl shadow-pink-100 active:scale-95 transition-all"
+                className="col-span-3 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl font-bold text-sm shadow-lg shadow-pink-200 active:scale-95 transition-all"
               >
                 {language === 'bn' ? 'সংরক্ষণ করুন' : 'Save Entry'}
               </button>

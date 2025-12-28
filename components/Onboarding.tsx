@@ -200,10 +200,10 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
   const getFirstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
 
   const stepIcons = [
-    { icon: Globe, color: 'from-violet-500 to-purple-600', bg: 'bg-violet-50' },
+    { icon: Globe, color: 'from-pink-500 to-rose-600', bg: 'bg-pink-50' },
     { icon: UserCircle2, color: 'from-pink-500 to-rose-600', bg: 'bg-pink-50' },
-    { icon: HeartPulse, color: 'from-emerald-500 to-teal-600', bg: 'bg-emerald-50' },
-    { icon: CalendarHeart, color: 'from-amber-500 to-orange-600', bg: 'bg-amber-50' },
+    { icon: HeartPulse, color: 'from-pink-500 to-rose-600', bg: 'bg-pink-50' },
+    { icon: CalendarHeart, color: 'from-pink-500 to-rose-600', bg: 'bg-pink-50' },
   ];
 
   const steps = [
@@ -211,13 +211,13 @@ const Onboarding: React.FC<Props> = ({ onFinish, onInstall, canInstall }) => {
     {
       icon: (
         <div className="relative">
-          <div className="w-32 h-32 bg-gradient-to-br from-violet-500 to-purple-600 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-violet-200 transform rotate-3">
+          <div className="w-32 h-32 bg-gradient-to-br from-pink-500 to-rose-600 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-pink-200 transform rotate-3">
             <Baby size={56} className="text-white drop-shadow-lg" />
           </div>
-          <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-br from-pink-400 to-rose-500 rounded-2xl flex items-center justify-center shadow-lg animate-pulse">
+          <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-br from-rose-400 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg animate-pulse">
             <Heart size={20} className="text-white" />
           </div>
-          <div className="absolute -top-2 -left-2 w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+          <div className="absolute -top-2 -left-2 w-10 h-10 bg-gradient-to-br from-pink-400 to-rose-500 rounded-xl flex items-center justify-center shadow-lg">
             <Sparkles size={18} className="text-white" />
           </div>
         </div>

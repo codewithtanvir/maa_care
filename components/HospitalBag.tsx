@@ -100,13 +100,13 @@ const HospitalBag: React.FC<Props> = ({ onBack, user }) => {
   return (
     <div className="p-6 space-y-8 pb-12">
       <header className="flex items-center gap-4">
-        <button onClick={onBack} className="p-3 hover:bg-indigo-50 rounded-2xl transition-all text-gray-600">
+        <button onClick={onBack} className="p-3 hover:bg-pink-50 rounded-2xl transition-all text-gray-600">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-black text-gray-800 tracking-tight">{t.hospitalBag}</h1>
       </header>
 
-      <div className="bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-700 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-indigo-100 relative overflow-hidden group">
+      <div className="bg-gradient-to-br from-pink-500 via-rose-500 to-pink-600 p-8 rounded-[2.5rem] text-white shadow-2xl shadow-pink-200 relative overflow-hidden group">
         <div className="absolute -top-4 -right-4 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
           <Briefcase size={120} />
         </div>
