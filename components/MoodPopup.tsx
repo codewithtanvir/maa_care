@@ -68,7 +68,7 @@ const MoodPopup: React.FC<Props> = ({ user, onClose }) => {
           <>
             <button 
               onClick={onClose}
-              className="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all active:scale-90"
+              className="absolute top-6 right-6 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-all active:scale-90 z-50"
             >
               <X size={20} />
             </button>
