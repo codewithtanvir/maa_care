@@ -32,6 +32,14 @@ const ProfileSettings: React.FC<Props> = ({ user, onUpdate, onLogout, onBack, on
   const [activeSection, setActiveSection] = useState<'profile' | 'health' | 'emergency' | 'settings' | null>(null);
   const [avatarSeed, setAvatarSeed] = useState(user?.avatarSeed || name || 'Mama');
   const [saveSuccess, setSaveSuccess] = useState(false);
+  
+  // PIN Change States
+  const [pinStep, setPinStep] = useState<'old' | 'new' | 'confirm'>('old');
+  const [oldPinInput, setOldPinInput] = useState('');
+  const [newPinInput, setNewPinInput] = useState('');
+  const [confirmPinInput, setConfirmPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [pinSuccess, setPinSuccess] = useState(false);
 
   const handleLanguageSwitch = async (lang: Language) => {
     if (!user.id) return;
@@ -552,71 +560,258 @@ const ProfileSettings: React.FC<Props> = ({ user, onUpdate, onLogout, onBack, on
         </div>
       </SectionModal>
 
-      <SectionModal 
-        isOpen={activeSection === 'settings'} 
-        onClose={() => setActiveSection(null)}
-        title={user.language === 'bn' ? 'নিরাপত্তা পিন' : 'Security PIN'}
-        icon={<Shield size={20} />}
-      >
-        <div className="space-y-6">
-          <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
-            <p className="text-xs font-bold text-amber-700 leading-relaxed">
-              {user.language === 'bn' 
-                ? 'আপনার ৪-সংখ্যার পিন আপনার স্বাস্থ্য ডেটা সুরক্ষিত রাখে। এটি অন্য কাউকে জানাবেন না।'
-                : 'Your 4-digit PIN keeps your health data private and secure. Do not share it with anyone.'}
-            </p>
-          </div>
-          
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 block text-center">
-              {user.language === 'bn' ? 'আপনার পিন লিখুন' : 'Enter Your PIN'}
-            </label>
-            
-            <div className="flex justify-center gap-3">
-              {[0, 1, 2, 3].map((i) => (
-                <div 
-                  key={i}
-                  className={`w-14 h-16 rounded-2xl border-2 flex items-center justify-center text-2xl font-black transition-all duration-200 ${
-                    pin.length === i ? 'border-pink-500 bg-pink-50 shadow-lg shadow-pink-100 scale-110' : 
-                    pin.length > i ? 'border-pink-200 bg-pink-50 text-pink-600' : 
-                    'border-gray-200 bg-gray-50 text-gray-300'
-                  }`}
-                >
-                  {pin[i] ? (showPin ? pin[i] : '●') : ''}
+      {/* Security PIN Modal - Custom Implementation */}
+      {activeSection === 'settings' && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-300"
+          onClick={(e) => { 
+            if (e.target === e.currentTarget) {
+              setActiveSection(null);
+              setPinStep('old');
+              setOldPinInput('');
+              setNewPinInput('');
+              setConfirmPinInput('');
+              setPinError('');
+              setPinSuccess(false);
+            }
+          }}
+        >
+          <div className="bg-white w-full max-w-md rounded-t-[2.5rem] p-6 pb-10 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500">
+                  <Shield size={20} />
+                </div>
+                <h2 className="text-lg font-black text-gray-900 tracking-tight">
+                  {user.language === 'bn' ? 'পিন পরিবর্তন' : 'Change PIN'}
+                </h2>
+              </div>
+              <button 
+                onClick={() => {
+                  setActiveSection(null);
+                  setPinStep('old');
+                  setOldPinInput('');
+                  setNewPinInput('');
+                  setConfirmPinInput('');
+                  setPinError('');
+                  setPinSuccess(false);
+                }}
+                className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400"
+              >
+                <ChevronRight size={20} className="rotate-90" />
+              </button>
+            </div>
+
+            {/* Progress Steps */}
+            <div className="flex items-center justify-center gap-2 mb-6">
+              {['old', 'new', 'confirm'].map((step, idx) => (
+                <div key={step} className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${
+                    pinStep === step ? 'bg-pink-500 text-white shadow-lg shadow-pink-200 scale-110' :
+                    (pinStep === 'new' && idx === 0) || (pinStep === 'confirm' && idx <= 1) ? 'bg-green-500 text-white' :
+                    'bg-gray-100 text-gray-400'
+                  }`}>
+                    {(pinStep === 'new' && idx === 0) || (pinStep === 'confirm' && idx <= 1) ? '✓' : idx + 1}
+                  </div>
+                  {idx < 2 && <div className={`w-8 h-1 rounded-full transition-all ${
+                    (pinStep === 'new' && idx === 0) || (pinStep === 'confirm') ? 'bg-green-500' : 'bg-gray-100'
+                  }`} />}
                 </div>
               ))}
             </div>
 
-            {/* Number Pad */}
-            <div className="grid grid-cols-3 gap-2 pt-4">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, null, 0, 'del'].map((num, idx) => (
+            {/* Success State */}
+            {pinSuccess ? (
+              <div className="text-center py-8 space-y-4">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle size={40} className="text-green-500" />
+                </div>
+                <h3 className="text-xl font-black text-gray-900">
+                  {user.language === 'bn' ? 'পিন পরিবর্তন সফল!' : 'PIN Changed!'}
+                </h3>
+                <p className="text-sm text-gray-500 font-medium">
+                  {user.language === 'bn' ? 'আপনার নতুন পিন সফলভাবে সংরক্ষিত হয়েছে।' : 'Your new PIN has been saved successfully.'}
+                </p>
                 <button
-                  key={idx}
                   onClick={() => {
-                    if (num === 'del') setPin(pin.slice(0, -1));
-                    else if (num !== null && pin.length < 4) setPin(pin + num);
+                    setActiveSection(null);
+                    setPinStep('old');
+                    setOldPinInput('');
+                    setNewPinInput('');
+                    setConfirmPinInput('');
+                    setPinError('');
+                    setPinSuccess(false);
                   }}
-                  disabled={num === null}
-                  className={`py-4 rounded-xl text-xl font-black transition-all ${
-                    num === null ? 'invisible' :
-                    num === 'del' ? 'bg-red-50 text-red-500 active:bg-red-100' :
-                    'bg-gray-100 text-gray-700 active:bg-pink-100 active:text-pink-600'
-                  }`}
+                  className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-green-200 active:scale-[0.98] transition-all"
                 >
-                  {num === 'del' ? '⌫' : num}
+                  {user.language === 'bn' ? 'সম্পন্ন' : 'Done'}
                 </button>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Step Instructions */}
+                <div className={`p-4 rounded-xl border ${
+                  pinStep === 'old' ? 'bg-amber-50 border-amber-100' :
+                  pinStep === 'new' ? 'bg-indigo-50 border-indigo-100' :
+                  'bg-green-50 border-green-100'
+                }`}>
+                  <p className={`text-xs font-bold leading-relaxed ${
+                    pinStep === 'old' ? 'text-amber-700' :
+                    pinStep === 'new' ? 'text-indigo-700' :
+                    'text-green-700'
+                  }`}>
+                    {pinStep === 'old' && (user.language === 'bn' 
+                      ? 'প্রথমে আপনার বর্তমান ৪-সংখ্যার পিন লিখুন।' 
+                      : 'First, enter your current 4-digit PIN.')}
+                    {pinStep === 'new' && (user.language === 'bn' 
+                      ? 'এখন আপনার নতুন ৪-সংখ্যার পিন লিখুন।' 
+                      : 'Now, enter your new 4-digit PIN.')}
+                    {pinStep === 'confirm' && (user.language === 'bn' 
+                      ? 'নিশ্চিত করতে আবার নতুন পিন লিখুন।' 
+                      : 'Re-enter your new PIN to confirm.')}
+                  </p>
+                </div>
 
-            <button 
-              onClick={() => setShowPin(!showPin)}
-              className="w-full py-3 text-xs font-black text-gray-500 uppercase tracking-widest"
-            >
-              {showPin ? (user.language === 'bn' ? '🔒 পিন লুকান' : '🔒 Hide PIN') : (user.language === 'bn' ? '👁 পিন দেখুন' : '👁 Show PIN')}
-            </button>
+                {/* Step Label */}
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 block text-center">
+                  {pinStep === 'old' && (user.language === 'bn' ? 'বর্তমান পিন' : 'Current PIN')}
+                  {pinStep === 'new' && (user.language === 'bn' ? 'নতুন পিন' : 'New PIN')}
+                  {pinStep === 'confirm' && (user.language === 'bn' ? 'নতুন পিন নিশ্চিত করুন' : 'Confirm New PIN')}
+                </label>
+
+                {/* PIN Display */}
+                <div className="flex justify-center gap-3">
+                  {[0, 1, 2, 3].map((i) => {
+                    const currentPin = pinStep === 'old' ? oldPinInput : pinStep === 'new' ? newPinInput : confirmPinInput;
+                    return (
+                      <div 
+                        key={i}
+                        className={`w-14 h-16 rounded-2xl border-2 flex items-center justify-center text-2xl font-black transition-all duration-200 ${
+                          currentPin.length === i ? `${
+                            pinStep === 'old' ? 'border-amber-500 bg-amber-50 shadow-lg shadow-amber-100' :
+                            pinStep === 'new' ? 'border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-100' :
+                            'border-green-500 bg-green-50 shadow-lg shadow-green-100'
+                          } scale-110` : 
+                          currentPin.length > i ? `${
+                            pinStep === 'old' ? 'border-amber-200 bg-amber-50 text-amber-600' :
+                            pinStep === 'new' ? 'border-indigo-200 bg-indigo-50 text-indigo-600' :
+                            'border-green-200 bg-green-50 text-green-600'
+                          }` : 
+                          'border-gray-200 bg-gray-50 text-gray-300'
+                        }`}
+                      >
+                        {currentPin[i] ? (showPin ? currentPin[i] : '●') : ''}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Error Message */}
+                {pinError && (
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-red-500 animate-in shake">{pinError}</p>
+                  </div>
+                )}
+
+                {/* Number Pad */}
+                <div className="grid grid-cols-3 gap-2 pt-2">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, null, 0, 'del'].map((num, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setPinError('');
+                        if (pinStep === 'old') {
+                          if (num === 'del') setOldPinInput(oldPinInput.slice(0, -1));
+                          else if (num !== null && oldPinInput.length < 4) {
+                            const newVal = oldPinInput + num;
+                            setOldPinInput(newVal);
+                            // Auto-advance when 4 digits entered
+                            if (newVal.length === 4) {
+                              if (newVal === pin) {
+                                setTimeout(() => setPinStep('new'), 300);
+                              } else {
+                                setPinError(user.language === 'bn' ? 'ভুল পিন! আবার চেষ্টা করুন।' : 'Wrong PIN! Try again.');
+                                setTimeout(() => setOldPinInput(''), 500);
+                              }
+                            }
+                          }
+                        } else if (pinStep === 'new') {
+                          if (num === 'del') setNewPinInput(newPinInput.slice(0, -1));
+                          else if (num !== null && newPinInput.length < 4) {
+                            const newVal = newPinInput + num;
+                            setNewPinInput(newVal);
+                            if (newVal.length === 4) {
+                              setTimeout(() => setPinStep('confirm'), 300);
+                            }
+                          }
+                        } else if (pinStep === 'confirm') {
+                          if (num === 'del') setConfirmPinInput(confirmPinInput.slice(0, -1));
+                          else if (num !== null && confirmPinInput.length < 4) {
+                            const newVal = confirmPinInput + num;
+                            setConfirmPinInput(newVal);
+                            if (newVal.length === 4) {
+                              if (newVal === newPinInput) {
+                                // Save new PIN
+                                setPin(newPinInput);
+                                handleSave();
+                                setPinSuccess(true);
+                              } else {
+                                setPinError(user.language === 'bn' ? 'পিন মিলছে না! আবার চেষ্টা করুন।' : 'PINs do not match! Try again.');
+                                setTimeout(() => {
+                                  setConfirmPinInput('');
+                                  setNewPinInput('');
+                                  setPinStep('new');
+                                }, 500);
+                              }
+                            }
+                          }
+                        }
+                      }}
+                      disabled={num === null}
+                      className={`py-4 rounded-xl text-xl font-black transition-all ${
+                        num === null ? 'invisible' :
+                        num === 'del' ? 'bg-red-50 text-red-500 active:bg-red-100' :
+                        'bg-gray-100 text-gray-700 active:bg-pink-100 active:text-pink-600'
+                      }`}
+                    >
+                      {num === 'del' ? '⌫' : num}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Show/Hide PIN Toggle */}
+                <button 
+                  onClick={() => setShowPin(!showPin)}
+                  className="w-full py-3 text-xs font-black text-gray-500 uppercase tracking-widest"
+                >
+                  {showPin ? (user.language === 'bn' ? '🔒 পিন লুকান' : '🔒 Hide PIN') : (user.language === 'bn' ? '👁 পিন দেখুন' : '👁 Show PIN')}
+                </button>
+
+                {/* Back Button (for new/confirm steps) */}
+                {pinStep !== 'old' && (
+                  <button 
+                    onClick={() => {
+                      if (pinStep === 'new') {
+                        setPinStep('old');
+                        setOldPinInput('');
+                      } else if (pinStep === 'confirm') {
+                        setPinStep('new');
+                        setNewPinInput('');
+                        setConfirmPinInput('');
+                      }
+                      setPinError('');
+                    }}
+                    className="w-full py-3 text-xs font-black text-gray-400 uppercase tracking-widest flex items-center justify-center gap-2"
+                  >
+                    <ArrowLeft size={14} />
+                    {user.language === 'bn' ? 'পেছনে যান' : 'Go Back'}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
-      </SectionModal>
+      )}
     </div>
   );
 };
