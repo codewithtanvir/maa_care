@@ -58,8 +58,13 @@ const MoodPopup: React.FC<Props> = ({ user, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500">
-      <div className="bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl border border-pink-100 relative overflow-hidden animate-in zoom-in slide-in-from-bottom-10 duration-500">
+    <div 
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-500"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="bg-white w-full max-w-sm rounded-[3rem] p-8 shadow-2xl border border-pink-100 relative overflow-hidden animate-in zoom-in slide-in-from-bottom-10 duration-500" onClick={(e) => e.stopPropagation()}>
         {/* Decorative Background Elements */}
         <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-pink-100/40 to-rose-100/20 rounded-full -mr-20 -mt-20 blur-3xl" />
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-indigo-100/30 to-pink-100/20 rounded-full -ml-20 -mb-20 blur-3xl" />
