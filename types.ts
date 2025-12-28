@@ -14,7 +14,8 @@ export enum View {
   MOOD_TRACKER = 'mood_tracker',
   NOTIFICATIONS = 'notifications',
   NUTRITION = 'nutrition',
-  EMERGENCY = 'emergency'
+  EMERGENCY = 'emergency',
+  CONTRACTION = 'contraction'
 }
 
 export type Language = 'en' | 'bn';

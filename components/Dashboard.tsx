@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile, View, Appointment } from '../types';
 import { getDashboardInsight } from '../services/geminiService';
-import { RefreshCw, Info, Briefcase, Footprints, Brain, MapPin, Clock, ChevronRight, Mic, Baby, Heart, Bell, Apple, ShieldAlert, Sparkles, User } from 'lucide-react';
+import { RefreshCw, Info, Briefcase, Footprints, Brain, MapPin, Clock, ChevronRight, Mic, Baby, Heart, Bell, Apple, ShieldAlert, Sparkles, User, Timer } from 'lucide-react';
 import { translations } from '../translations';
 import { supabase } from '../services/supabaseClient';
 
@@ -357,6 +357,25 @@ const Dashboard: React.FC<Props> = ({ user, onNavigate }) => {
                 </div>
               </div>
             </button>
+
+            {/* Contraction Timer - Show only in 3rd trimester */}
+            {(user.currentWeek || 1) >= 28 && (
+              <button 
+                onClick={() => onNavigate(View.CONTRACTION)} 
+                className="group relative bg-white p-4 rounded-[1.5rem] border border-rose-50 shadow-sm hover:border-rose-200 hover:shadow-md transition-all active:scale-95 overflow-hidden col-span-2"
+              >
+                <div className="relative z-10 flex items-center gap-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-rose-100 group-hover:rotate-6 transition-transform">
+                    <Timer size={20} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-black text-gray-900 text-sm tracking-tight">{user.language === 'bn' ? 'কন্ট্রাকশন টাইমার' : 'Contraction Timer'}</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">{user.language === 'bn' ? 'প্রসব পূর্ববর্তী সংকোচন ট্র্যাক' : 'Track Labor Contractions'}</p>
+                  </div>
+                  <ChevronRight size={18} className="text-gray-300 group-hover:text-rose-500 transition-colors" />
+                </div>
+              </button>
+            )}
           </div>
         </section>
 

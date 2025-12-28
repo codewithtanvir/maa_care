@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, User, Bot, Camera, X, Trash2, ArrowLeft } from 'lucide-react';
-import { Message, Language, UserProfile } from '../types';
+import { Send, User, Bot, Camera, X, Trash2, ArrowLeft, Mic } from 'lucide-react';
+import { Message, Language, UserProfile, View } from '../types';
 import { getAIChatResponse } from '../services/geminiService';
 import { translations } from '../translations';
 import { supabase } from '../services/supabaseClient';
@@ -9,9 +9,10 @@ import { supabase } from '../services/supabaseClient';
 interface Props {
   user: UserProfile;
   onBack: () => void;
+  onNavigate?: (view: View) => void;
 }
 
-const ChatSupport: React.FC<Props> = ({ user, onBack }) => {
+const ChatSupport: React.FC<Props> = ({ user, onBack, onNavigate }) => {
   const language = user.language;
   const t = translations[language || 'en'] || translations.en;
   const [messages, setMessages] = useState<Message[]>([]);
@@ -173,7 +174,7 @@ const ChatSupport: React.FC<Props> = ({ user, onBack }) => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header with Clear Action */}
+      {/* Header with Voice Toggle and Clear Action */}
       <div className="px-4 py-2 flex justify-between items-center bg-white/50 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-10">
         <div className="flex items-center gap-2">
           <button onClick={onBack} className="p-2 hover:bg-pink-50 rounded-full transition-colors">
@@ -181,13 +182,25 @@ const ChatSupport: React.FC<Props> = ({ user, onBack }) => {
           </button>
           <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Maa Care AI Support</span>
         </div>
-        <button 
-          onClick={clearChat}
-          className="p-1.5 text-gray-300 hover:text-red-400 transition-colors"
-          title="Clear History"
-        >
-          <Trash2 size={16} />
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Voice Mode Toggle */}
+          {onNavigate && (
+            <button 
+              onClick={() => onNavigate(View.VOICE_SUPPORT)}
+              className="p-2 bg-gradient-to-br from-indigo-500 to-purple-500 text-white rounded-xl hover:shadow-lg hover:scale-105 active:scale-95 transition-all"
+              title={language === 'bn' ? 'ভয়েস মোড' : 'Voice Mode'}
+            >
+              <Mic size={16} />
+            </button>
+          )}
+          <button 
+            onClick={clearChat}
+            className="p-1.5 text-gray-300 hover:text-red-400 transition-colors"
+            title="Clear History"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

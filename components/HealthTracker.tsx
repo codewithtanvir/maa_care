@@ -232,6 +232,28 @@ const moodIcons = {
     nauseous: <Frown className="text-green-500" />
   };
 
+  // Parse blood pressure string (e.g., "120/80") into systolic and diastolic
+  const parseBP = (bp: string): { systolic: number; diastolic: number } | null => {
+    const match = bp?.match(/(\d+)\s*\/\s*(\d+)/);
+    if (match) {
+      return { systolic: parseInt(match[1]), diastolic: parseInt(match[2]) };
+    }
+    return null;
+  };
+
+  // Get BP status label
+  const getBPStatus = (systolic: number, diastolic: number): { label: string; color: string } => {
+    if (systolic < 120 && diastolic < 80) {
+      return { label: language === 'bn' ? 'স্বাভাবিক' : 'Normal', color: 'text-green-600 bg-green-50' };
+    } else if (systolic < 130 && diastolic < 80) {
+      return { label: language === 'bn' ? 'উন্নত' : 'Elevated', color: 'text-yellow-600 bg-yellow-50' };
+    } else if (systolic < 140 || diastolic < 90) {
+      return { label: language === 'bn' ? 'উচ্চ রক্তচাপ স্তর ১' : 'High BP Stage 1', color: 'text-orange-600 bg-orange-50' };
+    } else {
+      return { label: language === 'bn' ? 'উচ্চ রক্তচাপ স্তর ২' : 'High BP Stage 2', color: 'text-red-600 bg-red-50' };
+    }
+  };
+
   const WeightChart: React.FC<{ logs: LogEntry[], language: Language }> = ({ logs, language }) => {
     const weightLogs = useMemo(() => 
       logs
@@ -257,6 +279,12 @@ const moodIcons = {
       return `${x},${y}`;
     }).join(' ');
 
+    // Calculate weight gain
+    const latestWeight = weights[weights.length - 1];
+    const firstWeight = weights[0];
+    const weightChange = (latestWeight - firstWeight).toFixed(1);
+    const isGain = parseFloat(weightChange) >= 0;
+
     return (
       <div className="bg-white p-5 rounded-[2rem] border border-pink-50 shadow-sm space-y-4 animate-in fade-in duration-700">
         <div className="flex justify-between items-center px-2">
@@ -266,7 +294,9 @@ const moodIcons = {
               {language === 'bn' ? 'ওজন ট্র্যাকার' : 'Weight Trend'}
             </h3>
           </div>
-          <span className="text-xs font-bold text-pink-500 bg-pink-50 px-2 py-1 rounded-full uppercase tracking-widest">Last {weightLogs.length} entries</span>
+          <span className={`text-xs font-bold px-2 py-1 rounded-full uppercase tracking-widest ${isGain ? 'text-pink-500 bg-pink-50' : 'text-green-500 bg-green-50'}`}>
+            {isGain ? '+' : ''}{weightChange} kg
+          </span>
         </div>
         <div className="relative h-[120px] w-full flex items-center justify-center">
           <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
@@ -314,6 +344,191 @@ const moodIcons = {
               );
             })}
           </svg>
+        </div>
+      </div>
+    );
+  };
+
+  // Blood Pressure Chart Component
+  const BloodPressureChart: React.FC<{ logs: LogEntry[], language: Language }> = ({ logs, language }) => {
+    const bpLogs = useMemo(() => 
+      logs
+        .filter(l => l.bloodPressure && parseBP(l.bloodPressure))
+        .slice(0, 7)
+        .reverse(), 
+    [logs]);
+
+    if (bpLogs.length < 2) return null;
+
+    const bpData = bpLogs.map(l => parseBP(l.bloodPressure!)!);
+    const systolicValues = bpData.map(bp => bp.systolic);
+    const diastolicValues = bpData.map(bp => bp.diastolic);
+    
+    const minBP = Math.min(...diastolicValues) - 10;
+    const maxBP = Math.max(...systolicValues) + 10;
+    const range = maxBP - minBP;
+
+    const width = 300;
+    const height = 100;
+    const padding = 20;
+
+    // Generate points for systolic (top line)
+    const systolicPoints = bpLogs.map((_, i) => {
+      const x = (i / (bpLogs.length - 1)) * (width - padding * 2) + padding;
+      const y = height - ((systolicValues[i] - minBP) / range) * (height - padding * 2) - padding;
+      return `${x},${y}`;
+    }).join(' ');
+
+    // Generate points for diastolic (bottom line)
+    const diastolicPoints = bpLogs.map((_, i) => {
+      const x = (i / (bpLogs.length - 1)) * (width - padding * 2) + padding;
+      const y = height - ((diastolicValues[i] - minBP) / range) * (height - padding * 2) - padding;
+      return `${x},${y}`;
+    }).join(' ');
+
+    // Get latest BP status
+    const latestBP = bpData[bpData.length - 1];
+    const bpStatus = getBPStatus(latestBP.systolic, latestBP.diastolic);
+
+    return (
+      <div className="bg-white p-5 rounded-[2rem] border border-indigo-50 shadow-sm space-y-4 animate-in fade-in duration-700">
+        <div className="flex justify-between items-center px-2">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-3.5 bg-indigo-500 rounded-full" />
+            <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">
+              {language === 'bn' ? 'রক্তচাপ ট্র্যাকার' : 'Blood Pressure'}
+            </h3>
+          </div>
+          <span className={`text-xs font-bold px-2 py-1 rounded-full uppercase tracking-widest ${bpStatus.color}`}>
+            {bpStatus.label}
+          </span>
+        </div>
+        <div className="relative h-[120px] w-full flex items-center justify-center">
+          <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
+            <defs>
+              <linearGradient id="systolicGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#6366f1" />
+                <stop offset="100%" stopColor="#8b5cf6" />
+              </linearGradient>
+              <linearGradient id="diastolicGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#06b6d4" />
+                <stop offset="100%" stopColor="#22d3ee" />
+              </linearGradient>
+            </defs>
+            
+            {/* Reference lines for normal BP range */}
+            <line x1={padding} y1={height - ((120 - minBP) / range) * (height - padding * 2) - padding} 
+                  x2={width - padding} y2={height - ((120 - minBP) / range) * (height - padding * 2) - padding} 
+                  stroke="#dcfce7" strokeWidth="2" strokeDasharray="4" />
+            <line x1={padding} y1={height - ((80 - minBP) / range) * (height - padding * 2) - padding} 
+                  x2={width - padding} y2={height - ((80 - minBP) / range) * (height - padding * 2) - padding} 
+                  stroke="#dcfce7" strokeWidth="2" strokeDasharray="4" />
+            
+            {/* Systolic line (upper) */}
+            <polyline
+              fill="none"
+              stroke="url(#systolicGradient)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              points={systolicPoints}
+            />
+            
+            {/* Diastolic line (lower) */}
+            <polyline
+              fill="none"
+              stroke="url(#diastolicGradient)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              points={diastolicPoints}
+            />
+            
+            {/* Data points for systolic */}
+            {bpLogs.map((_, i) => {
+              const x = (i / (bpLogs.length - 1)) * (width - padding * 2) + padding;
+              const y = height - ((systolicValues[i] - minBP) / range) * (height - padding * 2) - padding;
+              return (
+                <circle key={`sys-${i}`} cx={x} cy={y} r="4" fill="white" stroke="#6366f1" strokeWidth="2" />
+              );
+            })}
+            
+            {/* Data points for diastolic */}
+            {bpLogs.map((_, i) => {
+              const x = (i / (bpLogs.length - 1)) * (width - padding * 2) + padding;
+              const y = height - ((diastolicValues[i] - minBP) / range) * (height - padding * 2) - padding;
+              return (
+                <circle key={`dia-${i}`} cx={x} cy={y} r="4" fill="white" stroke="#06b6d4" strokeWidth="2" />
+              );
+            })}
+          </svg>
+        </div>
+        
+        {/* Legend */}
+        <div className="flex justify-center gap-6 pt-2">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-indigo-500" />
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+              {language === 'bn' ? 'সিস্টোলিক' : 'Systolic'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-cyan-500" />
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+              {language === 'bn' ? 'ডায়াস্টোলিক' : 'Diastolic'}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Vital Stats Summary Card
+  const VitalSummary: React.FC<{ logs: LogEntry[], language: Language }> = ({ logs, language }) => {
+    const latestWithWeight = logs.find(l => l.weight);
+    const latestWithBP = logs.find(l => l.bloodPressure);
+    const latestWithGlucose = logs.find(l => l.glucose);
+    
+    if (!latestWithWeight && !latestWithBP && !latestWithGlucose) return null;
+
+    const latestBP = latestWithBP?.bloodPressure ? parseBP(latestWithBP.bloodPressure) : null;
+    const bpStatus = latestBP ? getBPStatus(latestBP.systolic, latestBP.diastolic) : null;
+
+    return (
+      <div className="grid grid-cols-3 gap-3 animate-in fade-in duration-500">
+        {/* Weight */}
+        <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-4 rounded-2xl border border-pink-100/50">
+          <p className="text-[10px] font-black text-pink-400 uppercase tracking-widest mb-1">
+            {language === 'bn' ? 'ওজন' : 'Weight'}
+          </p>
+          <p className="text-lg font-black text-pink-600">
+            {latestWithWeight?.weight || '--'} <span className="text-xs font-bold">kg</span>
+          </p>
+        </div>
+        
+        {/* Blood Pressure */}
+        <div className="bg-gradient-to-br from-indigo-50 to-violet-50 p-4 rounded-2xl border border-indigo-100/50">
+          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">
+            {language === 'bn' ? 'রক্তচাপ' : 'BP'}
+          </p>
+          <p className="text-lg font-black text-indigo-600">
+            {latestWithBP?.bloodPressure || '--/--'}
+          </p>
+          {bpStatus && (
+            <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full ${bpStatus.color}`}>
+              {bpStatus.label}
+            </span>
+          )}
+        </div>
+        
+        {/* Glucose */}
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-2xl border border-amber-100/50">
+          <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">
+            {language === 'bn' ? 'গ্লুকোজ' : 'Glucose'}
+          </p>
+          <p className="text-lg font-black text-amber-600">
+            {latestWithGlucose?.glucose || '--'} <span className="text-xs font-bold">mg/dL</span>
+          </p>
         </div>
       </div>
     );
@@ -509,7 +724,14 @@ const moodIcons = {
 
           {/* History */}
           <div className="space-y-6">
-            <WeightChart logs={logs} language={language || 'en'} />
+            {/* Vital Stats Summary */}
+            <VitalSummary logs={logs} language={language || 'en'} />
+            
+            {/* Charts Section */}
+            <div className="space-y-4">
+              <WeightChart logs={logs} language={language || 'en'} />
+              <BloodPressureChart logs={logs} language={language || 'en'} />
+            </div>
             
             <div className="flex justify-between items-center px-2">
               <h3 className="text-xs font-black text-gray-500 uppercase tracking-[0.2em]">{t.history}</h3>
