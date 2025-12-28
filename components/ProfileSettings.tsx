@@ -1,8 +1,7 @@
+
 import React, { useState } from 'react';
 import { UserProfile, Language } from '../types';
-import { Shield, LogOut, ChevronRight, Camera, ArrowLeft, Loader2, User, Phone, Calendar, Hash, Activity, Download, Trash2, Languages, AlertCircle, Droplets } from 'lucide-react';
-import SettingsCard from './SettingsCard';
-import Input from './Input';
+import { Shield, LogOut, ChevronRight, Camera, ArrowLeft, Loader2, User, Phone, Calendar, Hash, Activity, Download, Trash2, Languages, AlertCircle, Droplets, Heart, Baby, Sparkles, CheckCircle, Settings, Bell, HelpCircle, Star, Crown } from 'lucide-react';
 import { translations } from '../translations';
 import { supabase } from '../services/supabaseClient';
 
@@ -30,8 +29,9 @@ const ProfileSettings: React.FC<Props> = ({ user, onUpdate, onLogout, onBack, on
   const [emergencyContactPhone, setEmergencyContactPhone] = useState(user?.emergencyContactPhone || '');
   const [isSaving, setIsSaving] = useState(false);
   const [showPin, setShowPin] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [activeSection, setActiveSection] = useState<'profile' | 'health' | 'emergency' | 'settings' | null>(null);
   const [avatarSeed, setAvatarSeed] = useState(user?.avatarSeed || name || 'Mama');
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const handleLanguageSwitch = async (lang: Language) => {
     if (!user.id) return;
@@ -79,425 +79,544 @@ const ProfileSettings: React.FC<Props> = ({ user, onUpdate, onLogout, onBack, on
           pin, 
           dueDate, 
           currentWeek,
-          age: age ? parseInt(age) : null,
-          weight: weight ? parseFloat(weight) : null,
+          age: age ? parseInt(age) : undefined,
+          weight: weight ? parseFloat(weight) : undefined,
           pregnancyNumber: parseInt(pregnancyNumber),
           bloodGroup,
           emergencyContactName,
           emergencyContactPhone,
           avatarSeed
         });
-        const lang = user?.language || 'en';
-        alert(lang === 'bn' ? 'প্রোফাইল আপডেট করা হয়েছে!' : 'Profile Updated!');
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 2000);
       } else {
         throw error;
       }
     } catch (e) {
       console.error("Error saving profile", e);
-      alert(user.language === 'bn' ? 'সংরক্ষণ করতে সমস্যা হয়েছে' : 'Failed to save profile');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!user.id) return;
-    try {
-      const { error } = await supabase.from('profiles').delete().eq('id', user.id);
-      if (!error) onLogout();
-    } catch (e) {
-      console.error(e);
-    }
+  const progress = ((currentWeek || 1) / 40) * 100;
+
+  // Section Modal Component
+  const SectionModal = ({ isOpen, onClose, title, icon, children }: { isOpen: boolean; onClose: () => void; title: string; icon: React.ReactNode; children: React.ReactNode }) => {
+    if (!isOpen) return null;
+    return (
+      <div 
+        className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-300"
+        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      >
+        <div className="bg-white w-full max-w-md rounded-t-[2.5rem] p-6 pb-10 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[85vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-pink-50 rounded-xl flex items-center justify-center text-pink-500">
+                {icon}
+              </div>
+              <h2 className="text-lg font-black text-gray-900 tracking-tight">{title}</h2>
+            </div>
+            <button 
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400"
+            >
+              <ChevronRight size={20} className="rotate-90" />
+            </button>
+          </div>
+          {children}
+          <button
+            onClick={() => { handleSave(); onClose(); }}
+            disabled={isSaving}
+            className="w-full mt-6 py-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-pink-200 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {isSaving ? <Loader2 className="animate-spin w-5 h-5" /> : (
+              <>
+                <CheckCircle size={18} />
+                {user.language === 'bn' ? 'সংরক্ষণ করুন' : 'Save Changes'}
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    );
   };
 
+  // Input Field Component
+  const InputField = ({ label, value, onChange, type = 'text', placeholder, icon }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string; icon?: React.ReactNode }) => (
+    <div className="space-y-2">
+      <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{label}</label>
+      <div className="relative flex items-center">
+        {icon && <div className="absolute left-4 text-gray-400">{icon}</div>}
+        <input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={`w-full bg-gray-50 border-2 border-transparent rounded-xl py-3.5 text-sm font-bold text-gray-800 placeholder:text-gray-300 focus:border-pink-200 focus:bg-white transition-all outline-none ${icon ? 'pl-12 pr-4' : 'px-4'}`}
+        />
+      </div>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col h-full bg-slate-50/50 overflow-hidden">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-md w-full px-6 py-4 flex items-center justify-between border-b border-pink-100/50 sticky top-0 z-20">
-        <div className="flex items-center gap-4">
+    <div className="flex flex-col h-full bg-[#FDFCFD] overflow-hidden">
+      {/* Success Toast */}
+      {saveSuccess && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[200] bg-green-500 text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-2 animate-in slide-in-from-top duration-300">
+          <CheckCircle size={18} />
+          <span className="text-sm font-bold">{user.language === 'bn' ? 'সংরক্ষিত হয়েছে!' : 'Saved Successfully!'}</span>
+        </div>
+      )}
+
+      {/* Premium Header */}
+      <div className="relative bg-gradient-to-br from-pink-500 via-rose-500 to-pink-600 px-6 pt-6 pb-28 overflow-hidden">
+        {/* Decorative Elements */}
+        <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full -ml-16 mb-10 blur-2xl" />
+        
+        {/* Header Actions */}
+        <div className="relative z-10 flex items-center justify-between mb-8">
           <button 
             onClick={onBack} 
-            className="p-2 hover:bg-pink-50 rounded-xl transition-all active:scale-90"
+            className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl text-white active:scale-90 transition-all"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft size={20} />
           </button>
-          <div>
-            <h1 className="text-xl font-black text-gray-800 tracking-tight">{t.profile}</h1>
-            <p className="text-xs font-bold text-pink-500 uppercase tracking-widest">
-              {isEditing ? (user.language === 'bn' ? 'সম্পাদনা মোড' : 'Editing Mode') : 'Settings & Preferences'}
-            </p>
+          <h1 className="text-lg font-black text-white tracking-tight">{t.profile}</h1>
+          <div className="w-10" /> {/* Spacer */}
+        </div>
+
+        {/* Profile Card - Floating */}
+        <div className="absolute left-6 right-6 -bottom-20 z-20">
+          <div className="bg-white rounded-[2rem] p-5 shadow-xl shadow-pink-200/30 border border-pink-50">
+            <div className="flex items-center gap-4">
+              {/* Avatar */}
+              <div className="relative shrink-0">
+                <div className="w-20 h-20 bg-gradient-to-br from-pink-100 to-rose-50 rounded-2xl flex items-center justify-center p-1 shadow-inner overflow-hidden ring-4 ring-pink-50">
+                  <img 
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}&backgroundColor=ffdfbf,ffd5dc,d1d4f9`} 
+                    alt="Avatar" 
+                    className="w-full h-full object-cover rounded-xl" 
+                  />
+                </div>
+                <button 
+                  onClick={() => setAvatarSeed(Math.random().toString(36).substring(7))}
+                  className="absolute -bottom-1 -right-1 p-2 bg-pink-500 text-white rounded-xl shadow-lg shadow-pink-200 border-2 border-white active:scale-90 transition-all"
+                >
+                  <Camera size={12} strokeWidth={3} />
+                </button>
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="text-xl font-black text-gray-900 tracking-tight truncate">{name || 'Mama'}</h2>
+                  <div className="p-1 bg-amber-100 rounded-lg">
+                    <Crown size={12} className="text-amber-500" />
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-1 bg-pink-50 text-pink-600 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                    {t.week} {currentWeek}
+                  </span>
+                  {bloodGroup && (
+                    <span className="px-2.5 py-1 bg-red-50 text-red-500 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                      <Droplets size={10} /> {bloodGroup}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Mini Progress */}
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{user.language === 'bn' ? 'গর্ভাবস্থার অগ্রগতি' : 'Pregnancy Progress'}</span>
+                <span className="text-[10px] font-black text-pink-500">{Math.round(progress)}%</span>
+              </div>
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-pink-400 to-rose-500 rounded-full transition-all duration-500"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {!isEditing ? (
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-6 pt-24 pb-32 space-y-4">
+        
+        {/* Quick Stats */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <div className="w-8 h-8 bg-indigo-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <User size={16} className="text-indigo-500" />
+            </div>
+            <p className="text-lg font-black text-gray-900">{age || '--'}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{user.language === 'bn' ? 'বয়স' : 'Age'}</p>
+          </div>
+          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <div className="w-8 h-8 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <Activity size={16} className="text-green-500" />
+            </div>
+            <p className="text-lg font-black text-gray-900">{weight || '--'}<span className="text-xs font-bold text-gray-400 ml-0.5">kg</span></p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{user.language === 'bn' ? 'ওজন' : 'Weight'}</p>
+          </div>
+          <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm text-center">
+            <div className="w-8 h-8 bg-pink-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <Baby size={16} className="text-pink-500" />
+            </div>
+            <p className="text-lg font-black text-gray-900">{pregnancyNumber}<span className="text-xs font-bold text-gray-400 ml-0.5">{pregnancyNumber === '1' ? 'st' : pregnancyNumber === '2' ? 'nd' : 'rd'}</span></p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{user.language === 'bn' ? 'গর্ভাবস্থা' : 'Pregnancy'}</p>
+          </div>
+        </div>
+
+        {/* Menu Sections */}
+        <div className="space-y-3 pt-2">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{user.language === 'bn' ? 'অ্যাকাউন্ট সেটিংস' : 'Account Settings'}</p>
+          
+          {/* Personal Info */}
+          <button 
+            onClick={() => setActiveSection('profile')}
+            className="w-full bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all group"
+          >
+            <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500 group-hover:scale-105 transition-transform">
+              <User size={22} />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-black text-gray-900 tracking-tight">{user.language === 'bn' ? 'ব্যক্তিগত তথ্য' : 'Personal Info'}</p>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{user.language === 'bn' ? 'নাম, ফোন, প্রসবের তারিখ' : 'Name, Phone, Due Date'}</p>
+            </div>
+            <ChevronRight size={18} className="text-gray-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+          </button>
+
+          {/* Health Info */}
+          <button 
+            onClick={() => setActiveSection('health')}
+            className="w-full bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all group"
+          >
+            <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-500 group-hover:scale-105 transition-transform">
+              <Heart size={22} />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-black text-gray-900 tracking-tight">{user.language === 'bn' ? 'স্বাস্থ্য তথ্য' : 'Health Info'}</p>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{user.language === 'bn' ? 'বয়স, ওজন, রক্তের গ্রুপ' : 'Age, Weight, Blood Group'}</p>
+            </div>
+            <ChevronRight size={18} className="text-gray-300 group-hover:text-green-500 group-hover:translate-x-1 transition-all" />
+          </button>
+
+          {/* Emergency Contact */}
+          <button 
+            onClick={() => setActiveSection('emergency')}
+            className="w-full bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all group"
+          >
+            <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center text-red-500 group-hover:scale-105 transition-transform">
+              <AlertCircle size={22} />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-black text-gray-900 tracking-tight">{user.language === 'bn' ? 'জরুরি যোগাযোগ' : 'Emergency Contact'}</p>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{emergencyContactName || (user.language === 'bn' ? 'সেট করা হয়নি' : 'Not Set')}</p>
+            </div>
+            <ChevronRight size={18} className="text-gray-300 group-hover:text-red-500 group-hover:translate-x-1 transition-all" />
+          </button>
+
+          {/* Security & PIN */}
+          <button 
+            onClick={() => setActiveSection('settings')}
+            className="w-full bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all group"
+          >
+            <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 group-hover:scale-105 transition-transform">
+              <Shield size={22} />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-black text-gray-900 tracking-tight">{user.language === 'bn' ? 'নিরাপত্তা ও পিন' : 'Security & PIN'}</p>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{user.language === 'bn' ? 'পিন পরিবর্তন করুন' : 'Change your PIN'}</p>
+            </div>
+            <ChevronRight size={18} className="text-gray-300 group-hover:text-amber-500 group-hover:translate-x-1 transition-all" />
+          </button>
+        </div>
+
+        {/* Language Toggle */}
+        <div className="pt-2">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-3">{user.language === 'bn' ? 'ভাষা' : 'Language'}</p>
+          <div className="bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => handleLanguageSwitch('en')}
+                className={`py-3.5 rounded-xl text-sm font-black transition-all ${
+                  user.language === 'en' 
+                    ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-200' 
+                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                }`}
+              >
+                🇺🇸 English
+              </button>
+              <button
+                onClick={() => handleLanguageSwitch('bn')}
+                className={`py-3.5 rounded-xl text-sm font-black transition-all ${
+                  user.language === 'bn' 
+                    ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-200' 
+                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                }`}
+              >
+                🇧🇩 বাংলা
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="pt-4 space-y-3">
+          {canInstall && onInstall && (
             <button 
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 bg-indigo-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center gap-2"
+              onClick={onInstall}
+              className="w-full p-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl shadow-lg shadow-indigo-200 flex items-center gap-4 active:scale-[0.98] transition-all"
             >
-              <User size={16} />
-              {user.language === 'bn' ? 'সম্পাদনা' : 'Edit'}
-            </button>
-          ) : (
-            <button 
-              onClick={async () => {
-                await handleSave();
-                setIsEditing(false);
-              }}
-              disabled={isSaving}
-              className="px-4 py-2 bg-pink-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-pink-200 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
-            >
-              {isSaving ? <Loader2 className="animate-spin w-4 h-4" /> : t.save}
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <Download size={22} />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-black tracking-tight">{t.installApp}</p>
+                <p className="text-[10px] font-bold opacity-80 uppercase tracking-wider">PWA Version</p>
+              </div>
+              <Sparkles size={18} className="opacity-60" />
             </button>
           )}
-        </div>
-      </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-32 space-y-5">
-        {/* Profile Identity Card - More Compact & Premium */}
-        <div className="relative overflow-hidden bg-white rounded-[2.5rem] p-6 shadow-sm border border-pink-100/50 flex items-center gap-5 group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-pink-50 to-rose-50/30 rounded-full -mr-16 -mt-16 -z-10 blur-2xl" />
-          
-          <div className="relative shrink-0">
-            <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center p-1 shadow-lg ring-4 ring-pink-50 overflow-hidden transition-transform duration-500 group-hover:scale-105">
-              <img 
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}&backgroundColor=ffdfbf,ffd5dc,d1d4f9`} 
-                alt="Avatar" 
-                className="w-full h-full object-cover rounded-2xl" 
-              />
+          <button 
+            onClick={onLogout}
+            className="w-full p-4 bg-white border border-gray-200 rounded-2xl flex items-center gap-4 active:scale-[0.98] transition-all group"
+          >
+            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500 group-hover:bg-red-50 group-hover:text-red-500 transition-colors">
+              <LogOut size={22} />
             </div>
-            <button 
-              onClick={() => setAvatarSeed(Math.random().toString(36).substring(7))}
-              className="absolute -bottom-1 -right-1 p-2 bg-pink-500 text-white rounded-xl shadow-lg border-2 border-white active:scale-90 transition-all hover:bg-pink-600"
-            >
-              <Camera size={14} strokeWidth={2.5} />
-            </button>
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-black text-gray-800 tracking-tight truncate mb-1">{name || 'Mama'}</h2>
-            <div className="flex flex-wrap gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-pink-50 rounded-full">
-                <span className="w-1.5 h-1.5 bg-pink-400 rounded-full animate-pulse" />
-                <p className="text-pink-600 font-black text-[10px] uppercase tracking-wider">
-                  {t.week} {currentWeek}
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-50 rounded-full">
-                <p className="text-indigo-600 font-black text-[10px] uppercase tracking-wider">
-                  {bloodGroup || 'O+'}
-                </p>
-              </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-black text-gray-900 tracking-tight">{user.language === 'bn' ? 'সাইন আউট' : 'Sign Out'}</p>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{user.language === 'bn' ? 'এই ডিভাইস থেকে লগআউট' : 'Logout from this device'}</p>
             </div>
-          </div>
-        </div>
+          </button>
 
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white p-4 rounded-[1.5rem] border border-pink-50 shadow-sm text-center">
-            <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-1">{user.language === 'bn' ? 'বয়স' : 'Age'}</p>
-            {isEditing ? (
-              <input 
-                type="number"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                className="w-full bg-transparent border-none p-0 text-sm font-black text-gray-800 text-center focus:ring-0 outline-none"
-              />
-            ) : (
-              <p className="text-sm font-black text-gray-800">{age || '--'}</p>
-            )}
-          </div>
-          <div className="bg-white p-4 rounded-[1.5rem] border border-pink-50 shadow-sm text-center">
-            <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-1">{user.language === 'bn' ? 'ওজন' : 'Weight'}</p>
-            {isEditing ? (
-              <div className="flex items-center justify-center">
-                <input 
-                  type="number"
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  className="w-12 bg-transparent border-none p-0 text-sm font-black text-gray-800 text-center focus:ring-0 outline-none"
-                />
-                <span className="text-xs text-gray-500 font-bold ml-0.5">kg</span>
-              </div>
-            ) : (
-              <p className="text-sm font-black text-gray-800">{weight || '--'} <span className="text-xs text-gray-500 font-bold ml-0.5">kg</span></p>
-            )}
-          </div>
-          <div className="bg-white p-4 rounded-[1.5rem] border border-pink-50 shadow-sm text-center">
-            <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-1">{user.language === 'bn' ? 'গর্ভাবস্থা' : 'Pregnancy'}</p>
-            {isEditing ? (
-              <select 
-                value={pregnancyNumber}
-                onChange={(e) => setPregnancyNumber(e.target.value)}
-                className="w-full bg-transparent border-none p-0 text-sm font-black text-gray-800 text-center focus:ring-0 outline-none appearance-none"
-              >
-                <option value="1">1st</option>
-                <option value="2">2nd</option>
-                <option value="3">3rd</option>
-                <option value="4">4th+</option>
-              </select>
-            ) : (
-              <p className="text-sm font-black text-gray-800">{pregnancyNumber}<span className="text-xs text-gray-500 font-bold ml-0.5">{pregnancyNumber === '1' ? 'st' : pregnancyNumber === '2' ? 'nd' : 'rd'}</span></p>
-            )}
-          </div>
-        </div>
-
-        {/* Language Toggle - More Compact */}
-        <div className="bg-white rounded-[1.5rem] p-4 shadow-sm border border-pink-100/50 flex items-center justify-between">
-          <div className="flex items-center gap-3 ml-1">
-            <div className="p-2 bg-amber-50 text-amber-500 rounded-xl">
-              <Languages size={18} />
-            </div>
-            <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest">Language</h3>
-          </div>
-          <div className="bg-slate-50 rounded-xl p-1 flex relative w-36">
-            <div 
-              className="absolute h-[calc(100%-8px)] w-[calc(50%-4px)] bg-white shadow-sm rounded-lg transition-all duration-300 ease-out"
-              style={{ 
-                transform: user.language === 'bn' ? 'translateX(100%)' : 'translateX(0%)',
-                left: '4px',
-                top: '4px'
-              }}
-            />
-            <button
-              onClick={() => handleLanguageSwitch('en')}
-              className={`flex-1 py-2 text-[10px] font-black z-10 transition-colors duration-300 ${
-                user.language === 'en' ? 'text-pink-500' : 'text-gray-500'
-              }`}
-            >
-              ENGLISH
-            </button>
-            <button
-              onClick={() => handleLanguageSwitch('bn')}
-              className={`flex-1 py-2 text-[10px] font-black z-10 transition-colors duration-300 ${
-                user.language === 'bn' ? 'text-pink-500' : 'text-gray-500'
-              }`}
-            >
-              বাংলা
-            </button>
-          </div>
-        </div>
-
-        {/* Information Sections */}
-        <div className="space-y-4">
-          <SettingsCard title={user.language === 'bn' ? 'ব্যক্তিগত তথ্য' : 'Medical Profile'} icon={<Activity size={18} />}>
-            <div className="space-y-4">
-              <Input 
-                label={user.language === 'bn' ? 'নাম' : 'Full Name'}
-                icon={<User size={16} />}
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your Name"
-                disabled={!isEditing}
-              />
-
-              <div className="grid grid-cols-2 gap-3">
-                <Input
-                  label={user.language === 'bn' ? 'ফোন' : 'Phone'}
-                  icon={<Phone size={16} />}
-                  type="tel" 
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  disabled={!isEditing}
-                />
-                <Input
-                  label={user.language === 'bn' ? 'প্রসবের তারিখ' : 'Due Date'}
-                  icon={<Calendar size={16} />}
-                  type="date" 
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  disabled={!isEditing}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="relative group">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 block ml-1">{user.language === 'bn' ? 'রক্তের গ্রুপ' : 'Blood Group'}</label>
-                  <div className={`flex items-center bg-slate-50 rounded-xl px-3 py-2.5 border-2 border-transparent transition-all ${isEditing ? 'group-focus-within:border-pink-100 group-focus-within:bg-white' : 'opacity-60'}`}>
-                    <Droplets size={16} className="text-pink-400 mr-2" />
-                    <select 
-                      value={bloodGroup}
-                      onChange={(e) => setBloodGroup(e.target.value)}
-                      disabled={!isEditing}
-                      className="bg-transparent border-none p-0 w-full text-xs font-bold text-gray-800 focus:ring-0 outline-none disabled:cursor-not-allowed"
-                    >
-                      <option value="">Select</option>
-                      <option value="A+">A+</option>
-                      <option value="A-">A-</option>
-                      <option value="B+">B+</option>
-                      <option value="B-">B-</option>
-                      <option value="O+">O+</option>
-                      <option value="O-">O-</option>
-                      <option value="AB+">AB+</option>
-                      <option value="AB-">AB-</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="relative group">
-                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 block ml-1">{user.language === 'bn' ? 'সন্তান সংখ্যা' : 'Pregnancy'}</label>
-                  <div className={`flex items-center bg-slate-50 rounded-xl px-3 py-2.5 border-2 border-transparent transition-all ${isEditing ? 'group-focus-within:border-pink-100 group-focus-within:bg-white' : 'opacity-60'}`}>
-                    <Hash size={16} className="text-gray-400 mr-2" />
-                    <select 
-                      value={pregnancyNumber}
-                      onChange={(e) => setPregnancyNumber(e.target.value)}
-                      disabled={!isEditing}
-                      className="bg-transparent border-none p-0 w-full text-xs font-bold text-gray-800 focus:ring-0 outline-none disabled:cursor-not-allowed"
-                    >
-                      <option value="1">1st</option>
-                      <option value="2">2nd</option>
-                      <option value="3">3rd</option>
-                      <option value="4">4th+</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </SettingsCard>
-
-          {/* Emergency Contact Section */}
-          <SettingsCard title={user.language === 'bn' ? 'জরুরি যোগাযোগ' : 'Emergency Contact'} icon={<AlertCircle size={18} className="text-red-500" />}>
-            <div className="space-y-3">
-              <Input 
-                label={user.language === 'bn' ? 'নাম' : 'Contact Name'}
-                icon={<User size={16} />}
-                type="text" 
-                value={emergencyContactName}
-                onChange={(e) => setEmergencyContactName(e.target.value)}
-                placeholder="Husband, Mother, etc."
-                disabled={!isEditing}
-              />
-              <Input 
-                label={user.language === 'bn' ? 'ফোন নম্বর' : 'Phone Number'}
-                icon={<Phone size={16} />}
-                type="tel" 
-                value={emergencyContactPhone}
-                onChange={(e) => setEmergencyContactPhone(e.target.value)}
-                placeholder="017XXXXXXXX"
-                disabled={!isEditing}
-              />
-            </div>
-          </SettingsCard>
-
-          {/* Security / PIN Section */}
-          <SettingsCard title={user.language === 'bn' ? 'নিরাপত্তা পিন' : 'Privacy & Security'} icon={<Shield size={18} />}>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center px-1">
-                <p className="text-[10px] font-bold text-gray-500 leading-tight pr-4">
-                  {user.language === 'bn' 
-                    ? 'আপনার ডেটা সুরক্ষিত রাখতে ৪-সংখ্যার পিন ব্যবহার করুন।' 
-                    : 'Use a 4-digit PIN to keep your health data private and secure.'}
-                </p>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => { setPin(''); setShowPin(true); }}
-                    className="shrink-0 px-3 py-1.5 bg-indigo-50 text-indigo-500 rounded-lg text-[10px] font-black uppercase tracking-wider active:scale-95 transition-all"
-                  >
-                    {user.language === 'bn' ? 'পরিবর্তন' : 'Change'}
-                  </button>
-                  <button 
-                    onClick={() => setShowPin(!showPin)}
-                    className="shrink-0 px-3 py-1.5 bg-pink-50 text-pink-500 rounded-lg text-[10px] font-black uppercase tracking-wider active:scale-95 transition-all"
-                  >
-                    {showPin ? (user.language === 'bn' ? 'লুকান' : 'Hide') : (user.language === 'bn' ? 'দেখুন' : 'Show')}
-                  </button>
-                </div>
-              </div>
-              
-              <div className="relative flex flex-col items-center py-1">
-                <div className="flex justify-center gap-2.5">
-                  {[0, 1, 2, 3].map((i) => (
-                    <div 
-                      key={i}
-                      className={`w-10 h-12 rounded-xl border-2 flex items-center justify-center text-lg font-black transition-all duration-300 ${
-                        pin.length === i ? 'border-pink-500 bg-white shadow-lg shadow-pink-100 -translate-y-0.5 scale-105 z-10' : 
-                        pin.length > i ? 'border-pink-200 bg-pink-50 text-pink-600' : 
-                        'border-slate-100 bg-slate-50 text-slate-200'
-                      }`}
-                    >
-                      {pin[i] ? (showPin ? pin[i] : '●') : ''}
-                    </div>
-                  ))}
-                </div>
-                
-                <input 
-                  type="tel" 
-                  pattern="[0-9]*"
-                  inputMode="numeric"
-                  maxLength={4}
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-20"
-                />
-              </div>
-            </div>
-          </SettingsCard>
-        </div>
-
-        {/* Footer Actions */}
-        <div className="pt-4 space-y-3">
-          <div className="h-px bg-gradient-to-r from-transparent via-pink-100 to-transparent w-full" />
-          
-          <div className="grid grid-cols-1 gap-2.5">
-            {canInstall && onInstall && (
-              <button 
-                onClick={onInstall}
-                className="group flex items-center justify-between p-4 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-[1.5rem] shadow-lg shadow-pink-200 active:scale-[0.98] transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white/20 rounded-xl">
-                    <Download size={18} />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-black tracking-tight">{t.installApp}</p>
-                    <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest">PWA Version</p>
-                  </div>
-                </div>
-                <ChevronRight size={18} className="opacity-60 group-hover:translate-x-1 transition-transform" />
-              </button>
-            )}
-
-            <button 
-              onClick={onLogout}
-              className="group flex items-center justify-between p-4 bg-white border border-pink-100 rounded-[1.5rem] shadow-sm active:scale-[0.98] transition-all hover:bg-pink-50/30"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-slate-100 text-slate-500 rounded-xl group-hover:bg-pink-100 group-hover:text-pink-500 transition-colors">
-                  <LogOut size={18} />
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-black text-gray-800 tracking-tight">{user.language === 'bn' ? 'সাইন আউট' : 'Sign Out'}</p>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Logout from device</p>
-                </div>
-              </div>
-              <ChevronRight size={18} className="text-gray-300 group-hover:text-pink-400 group-hover:translate-x-1 transition-transform" />
-            </button>
-
-            <button 
-              onClick={async () => {
-                if (window.confirm(user.language === 'bn' ? 'আপনি কি নিশ্চিত যে আপনি আপনার অ্যাকাউন্ট মুছতে চান?' : 'Are you sure you want to delete your account?')) {
-                  try {
-                    const { error } = await supabase.from('profiles').delete().eq('id', user.id);
-                    if (!error) onLogout();
-                  } catch (e) {
-                    console.error(e);
-                  }
+          <button 
+            onClick={async () => {
+              if (window.confirm(user.language === 'bn' ? 'আপনি কি নিশ্চিত? এটি আপনার সব ডেটা মুছে ফেলবে।' : 'Are you sure? This will delete all your data.')) {
+                try {
+                  const { error } = await supabase.from('profiles').delete().eq('id', user.id);
+                  if (!error) onLogout();
+                } catch (e) {
+                  console.error(e);
                 }
-              }}
-              className="flex items-center justify-center gap-2 p-4 text-red-400 hover:text-red-500 transition-all active:scale-95"
-            >
-              <Trash2 size={14} />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">
-                {user.language === 'bn' ? 'অ্যাকাউন্ট মুছে ফেলুন' : 'Delete My Account'}
-              </span>
-            </button>
-          </div>
+              }
+            }}
+            className="w-full py-4 text-red-400 hover:text-red-500 transition-all flex items-center justify-center gap-2"
+          >
+            <Trash2 size={14} />
+            <span className="text-xs font-black uppercase tracking-widest">{user.language === 'bn' ? 'অ্যাকাউন্ট মুছুন' : 'Delete Account'}</span>
+          </button>
+        </div>
 
-          <div className="text-center pb-6">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Maa Care • Version 2.0.0</p>
-          </div>
+        {/* Footer */}
+        <div className="text-center pt-4 pb-6">
+          <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">Maa Care • v2.1.0</p>
         </div>
       </div>
+
+      {/* Section Modals */}
+      <SectionModal 
+        isOpen={activeSection === 'profile'} 
+        onClose={() => setActiveSection(null)}
+        title={user.language === 'bn' ? 'ব্যক্তিগত তথ্য' : 'Personal Info'}
+        icon={<User size={20} />}
+      >
+        <div className="space-y-4">
+          <InputField
+            label={user.language === 'bn' ? 'আপনার নাম' : 'Your Name'}
+            value={name}
+            onChange={setName}
+            placeholder="Enter your name"
+            icon={<User size={16} />}
+          />
+          <InputField
+            label={user.language === 'bn' ? 'ফোন নম্বর' : 'Phone Number'}
+            value={phoneNumber}
+            onChange={setPhoneNumber}
+            type="tel"
+            placeholder="017XXXXXXXX"
+            icon={<Phone size={16} />}
+          />
+          <InputField
+            label={user.language === 'bn' ? 'প্রসবের সম্ভাব্য তারিখ' : 'Due Date'}
+            value={dueDate}
+            onChange={setDueDate}
+            type="date"
+            icon={<Calendar size={16} />}
+          />
+        </div>
+      </SectionModal>
+
+      <SectionModal 
+        isOpen={activeSection === 'health'} 
+        onClose={() => setActiveSection(null)}
+        title={user.language === 'bn' ? 'স্বাস্থ্য তথ্য' : 'Health Info'}
+        icon={<Heart size={20} />}
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <InputField
+              label={user.language === 'bn' ? 'বয়স' : 'Age'}
+              value={age}
+              onChange={setAge}
+              type="number"
+              placeholder="25"
+            />
+            <InputField
+              label={user.language === 'bn' ? 'ওজন (kg)' : 'Weight (kg)'}
+              value={weight}
+              onChange={setWeight}
+              type="number"
+              placeholder="55"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{user.language === 'bn' ? 'রক্তের গ্রুপ' : 'Blood Group'}</label>
+            <div className="grid grid-cols-4 gap-2">
+              {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map((bg) => (
+                <button
+                  key={bg}
+                  onClick={() => setBloodGroup(bg)}
+                  className={`py-3 rounded-xl text-sm font-black transition-all ${
+                    bloodGroup === bg 
+                      ? 'bg-red-500 text-white shadow-lg shadow-red-200' 
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {bg}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{user.language === 'bn' ? 'কততম গর্ভাবস্থা' : 'Pregnancy Number'}</label>
+            <div className="grid grid-cols-4 gap-2">
+              {['1', '2', '3', '4'].map((pn) => (
+                <button
+                  key={pn}
+                  onClick={() => setPregnancyNumber(pn)}
+                  className={`py-3 rounded-xl text-sm font-black transition-all ${
+                    pregnancyNumber === pn 
+                      ? 'bg-pink-500 text-white shadow-lg shadow-pink-200' 
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {pn}{pn === '1' ? 'st' : pn === '2' ? 'nd' : pn === '3' ? 'rd' : 'th+'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </SectionModal>
+
+      <SectionModal 
+        isOpen={activeSection === 'emergency'} 
+        onClose={() => setActiveSection(null)}
+        title={user.language === 'bn' ? 'জরুরি যোগাযোগ' : 'Emergency Contact'}
+        icon={<AlertCircle size={20} />}
+      >
+        <div className="space-y-4">
+          <div className="p-4 bg-red-50 rounded-xl border border-red-100">
+            <p className="text-xs font-bold text-red-600 leading-relaxed">
+              {user.language === 'bn' 
+                ? 'জরুরি পরিস্থিতিতে এই ব্যক্তির সাথে যোগাযোগ করা হবে। অনুগ্রহ করে একজন বিশ্বস্ত ব্যক্তির তথ্য দিন।'
+                : 'This person will be contacted in emergencies. Please provide details of someone you trust.'}
+            </p>
+          </div>
+          <InputField
+            label={user.language === 'bn' ? 'যোগাযোগের নাম' : 'Contact Name'}
+            value={emergencyContactName}
+            onChange={setEmergencyContactName}
+            placeholder={user.language === 'bn' ? 'স্বামী, মা, বাবা...' : 'Husband, Mother, Father...'}
+            icon={<User size={16} />}
+          />
+          <InputField
+            label={user.language === 'bn' ? 'ফোন নম্বর' : 'Phone Number'}
+            value={emergencyContactPhone}
+            onChange={setEmergencyContactPhone}
+            type="tel"
+            placeholder="017XXXXXXXX"
+            icon={<Phone size={16} />}
+          />
+        </div>
+      </SectionModal>
+
+      <SectionModal 
+        isOpen={activeSection === 'settings'} 
+        onClose={() => setActiveSection(null)}
+        title={user.language === 'bn' ? 'নিরাপত্তা পিন' : 'Security PIN'}
+        icon={<Shield size={20} />}
+      >
+        <div className="space-y-6">
+          <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
+            <p className="text-xs font-bold text-amber-700 leading-relaxed">
+              {user.language === 'bn' 
+                ? 'আপনার ৪-সংখ্যার পিন আপনার স্বাস্থ্য ডেটা সুরক্ষিত রাখে। এটি অন্য কাউকে জানাবেন না।'
+                : 'Your 4-digit PIN keeps your health data private and secure. Do not share it with anyone.'}
+            </p>
+          </div>
+          
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 block text-center">
+              {user.language === 'bn' ? 'আপনার পিন লিখুন' : 'Enter Your PIN'}
+            </label>
+            
+            <div className="flex justify-center gap-3">
+              {[0, 1, 2, 3].map((i) => (
+                <div 
+                  key={i}
+                  className={`w-14 h-16 rounded-2xl border-2 flex items-center justify-center text-2xl font-black transition-all duration-200 ${
+                    pin.length === i ? 'border-pink-500 bg-pink-50 shadow-lg shadow-pink-100 scale-110' : 
+                    pin.length > i ? 'border-pink-200 bg-pink-50 text-pink-600' : 
+                    'border-gray-200 bg-gray-50 text-gray-300'
+                  }`}
+                >
+                  {pin[i] ? (showPin ? pin[i] : '●') : ''}
+                </div>
+              ))}
+            </div>
+
+            {/* Number Pad */}
+            <div className="grid grid-cols-3 gap-2 pt-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, null, 0, 'del'].map((num, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    if (num === 'del') setPin(pin.slice(0, -1));
+                    else if (num !== null && pin.length < 4) setPin(pin + num);
+                  }}
+                  disabled={num === null}
+                  className={`py-4 rounded-xl text-xl font-black transition-all ${
+                    num === null ? 'invisible' :
+                    num === 'del' ? 'bg-red-50 text-red-500 active:bg-red-100' :
+                    'bg-gray-100 text-gray-700 active:bg-pink-100 active:text-pink-600'
+                  }`}
+                >
+                  {num === 'del' ? '⌫' : num}
+                </button>
+              ))}
+            </div>
+
+            <button 
+              onClick={() => setShowPin(!showPin)}
+              className="w-full py-3 text-xs font-black text-gray-500 uppercase tracking-widest"
+            >
+              {showPin ? (user.language === 'bn' ? '🔒 পিন লুকান' : '🔒 Hide PIN') : (user.language === 'bn' ? '👁 পিন দেখুন' : '👁 Show PIN')}
+            </button>
+          </div>
+        </div>
+      </SectionModal>
     </div>
   );
 };
