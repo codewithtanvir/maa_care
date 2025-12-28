@@ -37,6 +37,18 @@ const SymptomChecker: React.FC<Props> = ({ user, onBack, onNavigate }) => {
     try {
       const res = await checkSymptomsAI(user, selectedSymptoms, notes);
       
+      if (res === "[ERROR]") {
+        setResult({
+          status: 'MONITOR',
+          title: language === 'bn' ? 'এআই বিশ্লেষণ ব্যর্থ হয়েছে' : 'AI Analysis Failed',
+          sections: [{
+            heading: language === 'bn' ? 'পুনরায় চেষ্টা করুন' : 'Please Try Again',
+            body: language === 'bn' ? 'দুঃখিত, এআই এই মুহূর্তে আপনার লক্ষণগুলো বিশ্লেষণ করতে পারছে না। অনুগ্রহ করে আবার চেষ্টা করুন বা সরাসরি ডাক্তারের সাথে কথা বলুন।' : 'Sorry, the AI cannot analyze your symptoms right now. Please try again or consult a doctor directly.'
+          }]
+        });
+        return;
+      }
+
       // Improved parsing logic
       const lines = res.split('\n').map(l => l.trim()).filter(l => l.length > 0);
       let status = 'MONITOR';

@@ -68,9 +68,12 @@ const Dashboard: React.FC<Props> = ({ user, onNavigate }) => {
       if (error) throw error;
 
       const res = await getDashboardInsight(user, logs || []);
-      if (res) {
+      if (res && res.trim()) {
         setInsight(res);
         localStorage.setItem(cacheKey, JSON.stringify({ text: res, timestamp: Date.now() }));
+      } else {
+        // Fallback if AI returns null or empty
+        setInsight((user?.language || 'en') === 'bn' ? "আজ পুষ্টিকর খাবার খান এবং পর্যাপ্ত বিশ্রাম নিন!" : "Focus on nutrition and get plenty of rest today!");
       }
     } catch (e) {
       console.error("Insight error:", e);

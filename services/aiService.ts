@@ -223,14 +223,14 @@ const executeGemini = async (provider: AIProvider, request: AIRequest): Promise<
   }
 
   const config: any = {
-    systemInstruction: request.systemInstruction,
     temperature: request.temperature || 0.7,
     maxOutputTokens: request.maxTokens || 2048
   };
 
   const result = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-2.0-flash-exp',
     contents: validContents,
+    systemInstruction: request.systemInstruction,
     config
   });
 
